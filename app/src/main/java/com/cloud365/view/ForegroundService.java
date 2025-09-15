@@ -1,5 +1,4 @@
 package com.cloud365.view;
-
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,7 +17,6 @@ import androidx.core.app.NotificationCompat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
 public class ForegroundService extends Service {
     public static final String ACTION_START_FOREGROUND = "com.cloud365.view.action.START_FOREGROUND";
     public static final String ACTION_STOP_FOREGROUND = "com.cloud365.view.action.STOP_FOREGROUND";
