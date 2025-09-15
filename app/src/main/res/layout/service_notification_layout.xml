@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/notification_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="365Cloud"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/notification_storage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="使用容量: -- / --"
+        android:textSize="14sp"
+        android:layout_marginTop="6dp" />
+
+    <TextView
+        android:id="@+id/notification_upload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:layout_marginTop="6dp" />
+
+    <TextView
+        android:id="@+id/notification_download"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:layout_marginTop="6dp" />
+
+</LinearLayout>
