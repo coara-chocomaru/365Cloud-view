@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_color_body">#87CEEB</color>
+    <color name="bg_color_app">#F2FFFFFF</color>
+    <color name="bg_color_main">#CCFFFFFF</color>
+    <color name="bg_color_action_section">#99E9F7FF</color>
+    <color name="bg_color_file_list">#B3FFFFFF</color>
+    <color name="bg_color_file_item">#F9F9F9</color>
+    <color name="bg_color_file_item_hover">#EEF</color>
+    <color name="bg_color_back_item">#E9E9E9</color>
+    <color name="bg_color_resizer">#33007BFF</color>
+    <color name="bg_color_resizer_hover">#80007BFF</color>
+    <color name="bg_color_resizer_active">#B3007BFF</color>
+    <color name="red">#FF0000</color>
+    <color name="text_color_primary">#333</color>
+    <color name="text_color_secondary">#555</color>
+    <color name="text_color_heading">#0056b3</color>
+    <color name="text_color_link">#007bff</color>
+    <color name="text_color_message_error">#FF0000</color>
+    <color name="text_color_message_success">#008000</color>
+
+    <color name="border_color_primary">#CCC</color>
+    <color name="border_color_secondary">#DDD</color>
+    <color name="border_color_action_section">#B3E0FF</color>
+
+    <color name="button_color_primary">#FFF</color>
+    <color name="button_bg_primary">#007BFF</color>
+    <color name="button_bg_primary_hover">#0056B3</color>
+    <color name="button_bg_secondary">#6C757D</color>
+    <color name="button_bg_secondary_hover">#5A6268</color>
+    <color name="button_bg_danger">#DC3545</color>
+    <color name="button_bg_danger_hover">#C82333</color>
+    <color name="button_bg_warning">#FFC107</color>
+    <color name="button_color_warning">#333</color>
+    <color name="button_bg_warning_hover">#E0A800</color>
+    <color name="button_bg_disabled">#CCC</color>
+
+    <color name="icon_color_primary">#007BFF</color>
+
+    <color name="dark_bg_color_body">#222</color>
+    <color name="dark_bg_color_app">#F2282828</color>
+    <color name="dark_bg_color_main">#CC323232</color>
+    <color name="dark_bg_color_action_section">#99464646</color>
+    <color name="dark_bg_color_file_list">#B33C3C3C</color>
+    <color name="dark_bg_color_file_item">#444</color>
+    <color name="dark_bg_color_file_item_hover">#555</color>
+    <color name="dark_bg_color_back_item">#5A5A5A</color>
+    <color name="dark_bg_color_resizer">#33646464</color>
+    <color name="dark_bg_color_resizer_hover">#80646464</color>
+    <color name="dark_bg_color_resizer_active">#B3646464</color>
+
+    <color name="dark_text_color_primary">#EEE</color>
+    <color name="dark_text_color_secondary">#BBB</color>
+    <color name="dark_text_color_heading">#80BFFF</color>
+    <color name="dark_text_color_link">#80BFFF</color>
+    <color name="dark_text_color_message_error">#FF8888</color>
+    <color name="dark_text_color_message_success">#88FF88</color>
+
+    <color name="dark_border_color_primary">#555</color>
+    <color name="dark_border_color_secondary">#666</color>
+    <color name="dark_border_color_action_section">#777</color>
+
+    <color name="dark_button_color_primary">#EEE</color>
+    <color name="dark_button_bg_primary">#0056B3</color>
+    <color name="dark_button_bg_primary_hover">#003F80</color>
+    <color name="dark_button_bg_secondary">#5A6268</color>
+    <color name="dark_button_bg_secondary_hover">#4A5258</color>
+    <color name="dark_button_bg_danger">#C82333</color>
+    <color name="dark_button_bg_danger_hover">#A01C28</color>
+    <color name="dark_button_bg_warning">#E0A800</color>
+    <color name="dark_button_color_warning">#EEE</color>
+    <color name="dark_button_bg_warning_hover">#C09000</color>
+    <color name="dark_button_bg_disabled">#888</color>
+
+    <color name="dark_icon_color_primary">#80BFFF</color>
+</resources>
