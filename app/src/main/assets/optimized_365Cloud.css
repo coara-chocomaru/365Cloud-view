@@ -1215,9 +1215,6 @@ body.dark-mode #preview-content {
     background-color: var(--bg-color-file-item-hover);
 }
 
-
-
-/* Mobile-friendly fallbacks for selectors that may not be supported on older WebView */
 .action-section div.has-file-input{
     flex-direction: row;
     align-items: center;
