@@ -112,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
         webSettings.setDisplayZoomControls(false);
         webSettings.setTextZoom(100);
         webSettings.setDefaultFontSize(16);
-        webSettings.setMinimumFontSize(14); 
+        webSettings.setMinimumFontSize(14);
         webSettings.setDefaultTextEncodingName("UTF-8");
         webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING);
         webSettings.setBlockNetworkImage(false);
@@ -123,7 +123,7 @@ public class LoginActivity extends AppCompatActivity {
         String jsViewport = "javascript:(function(){if(document.querySelector('meta[name=viewport]')===null){" +
                 "var meta=document.createElement('meta');meta.name='viewport';meta.content='" + viewportContent + "';document.head.appendChild(meta);" +
                 "}}())";
-        
+
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         cookieManager.setAcceptThirdPartyCookies(webView, true);
@@ -144,7 +144,7 @@ public class LoginActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 injectOptimizedCSS();
                 applyMobileOptimizations();
-                
+
                 if (url.contains("index.html")) {
                     saveLoginSuccess();
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -172,7 +172,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
-                if (url.equals("https://yuto-365.ddns.net/365Cloud/auth/discord")) {
+                if (url.equals("https://yuto-365.ddns.net/365Cloud/auth/discord") || url.startsWith("https://discord.com/")) {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(intent);
                     return true;
@@ -198,8 +198,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         webView.setDownloadListener(new DownloadListener() {
-            public void onDownloadStart(String url, String userAgent, String contentDisposition, 
-                                      String mimeType, long contentLength) {
+            public void onDownloadStart(String url, String userAgent, String contentDisposition,
+                                        String mimeType, long contentLength) {
                 DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
                 request.setMimeType(mimeType);
                 String cookies = CookieManager.getInstance().getCookie(url);
@@ -208,9 +208,9 @@ public class LoginActivity extends AppCompatActivity {
                 request.setDescription("365Cloud ファイルダウンロード中...");
                 request.setTitle("ダウンロード");
                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, contentDisposition != null ? 
-                    contentDisposition.replaceFirst("(?i)[^\\w\\.-]+", "") : "unknown_file");
-                
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, contentDisposition != null ?
+                        contentDisposition.replaceFirst("(?i)[^\\w\\.-]+", "") : "unknown_file");
+
                 DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
                 dm.enqueue(request);
                 Toast.makeText(LoginActivity.this, "ダウンロードを開始しました", Toast.LENGTH_SHORT).show();
@@ -237,7 +237,7 @@ public class LoginActivity extends AppCompatActivity {
                         "}" +
                         "})()";
                 webView.evaluateJavascript(js, null);
-            }, 2000); 
+            }, 2000);
         } else {
             webView.loadUrl(BASE_URL + "login.html");
         }
@@ -249,7 +249,7 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("cookies", cookies);
         editor.apply();
-        cookieManager.flush(); 
+        cookieManager.flush();
     }
 
     private void injectOptimizedCSS() {
