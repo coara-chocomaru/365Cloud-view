@@ -2,5 +2,10 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">yuto-365.ddns.net</domain>
+        <domain includeSubdomains="true">discord.com</domain>
+        <domain includeSubdomains="true">discord.gg</domain>
+        <domain includeSubdomains="true">discordapp.com</domain>
+        <domain includeSubdomains="true">discordapp.net</domain>
+        <domain includeSubdomains="true">discord.media</domain>
     </domain-config>
 </network-security-config>
