@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>共有管理 - 365Cloud</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="share-management.css">
+    <link rel="icon" type="image/png" href="/365Cloud/365Cloud_Mainicon.png">
+    <link rel="apple-touch-icon" href="/365Cloud/365Cloud_Mainicon.png">
+</head>
+<body>
+    <div id="particles-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <div class="app-container">
+        <div class="sidebar">
+            <h1>365Cloud</h1>
+            <h2>共有管理</h2>
+            <a href="/365Cloud/index.html" class="btn" style="width:100%; box-sizing:border-box; text-align:center; text-decoration:none;">ファイル管理に戻る</a>
+        </div>
+
+        <main class="main-content">
+            <h1>共有リンク一覧</h1>
+            <p>あなたが作成した共有リンクの一覧です。</p>
+
+            <div class="controls">
+                <button id="refresh-shares" class="btn btn-info">一覧を更新</button>
+            </div>
+
+            <div id="share-list-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ファイル名</th>
+                            <th>作成日時</th>
+                            <th>保護設定</th>
+                            <th>リンク</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="share-list-body"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Share Modal -->
+    <div id="edit-share-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" id="close-edit-modal-button">×</span>
+            <h2>共有設定の編集</h2>
+            <p id="edit-modal-filename"></p>
+
+            <div class="share-protection-options">
+                <div class="option-row">
+                    <input type="radio" id="edit-protect-none" name="edit-protection" value="none">
+                    <label for="edit-protect-none">保護なし</label>
+                </div>
+
+                <div class="option-row">
+                    <input type="radio" id="edit-protect-pin" name="edit-protection" value="pin">
+                    <label for="edit-protect-pin">PINコードで保護</label>
+                </div>
+                <div id="edit-pin-input-container" class="input-container" style="display: none;">
+                    <input type="text" id="edit-share-pin-input" placeholder="4〜6桁の数字" maxlength="6">
+                </div>
+
+                <div class="option-row">
+                    <input type="radio" id="edit-protect-password" name="edit-protection" value="password">
+                    <label for="edit-protect-password">パスワードで保護</label>
+                </div>
+                <div id="edit-password-input-container" class="input-container" style="display: none;">
+                    <input type="password" id="edit-share-password-input" placeholder="8文字以上">
+                </div>
+            </div>
+
+            <p class="modal-error-message" id="edit-modal-error"></p>
+            <button id="save-share-changes-button" class="btn btn-approve">変更を保存</button>
+        </div>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="message-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" id="close-message-modal-button">×</span>
+            <h3 id="message-modal-title">お知らせ</h3>
+            <p id="message-modal-text"></p>
+            <button id="message-modal-ok-button">OK</button>
+        </div>
+    </div>
+
+    <script src="share-management.js"></script>
+</body>
+</html>
