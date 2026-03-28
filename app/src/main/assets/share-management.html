@@ -143,25 +143,30 @@
             overflow: hidden;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
             border: 1px solid var(--border);
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 620px;
         }
         thead {
             background-color: #0f172a;
         }
         th {
-            padding: 16px 12px;
+            padding: 14px 8px;
             text-align: left;
             font-weight: 500;
-            font-size: 0.9em;
+            font-size: 0.85em;
             color: var(--text-secondary);
             border-bottom: 1px solid var(--border);
+            white-space: nowrap;
         }
         td {
-            padding: 18px 12px;
-            font-size: 1em;
+            padding: 14px 8px;
+            font-size: 0.95em;
             border-bottom: 1px solid var(--border);
             vertical-align: middle;
         }
@@ -173,7 +178,7 @@
             color: var(--text-primary);
         }
         .link-cell {
-            max-width: 160px;
+            max-width: 140px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -186,9 +191,10 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
+            min-width: 110px;
         }
         .operation-buttons button {
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 8px;
             font-size: 0.9em;
             border: none;
@@ -407,7 +413,6 @@
         </div>
     </div>
 
-    <!-- General Message Modal -->
     <div id="message-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="close-message-modal-button">×</span>
