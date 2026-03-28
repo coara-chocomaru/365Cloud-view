@@ -77,6 +77,7 @@ public class ForegroundService extends Service {
                 uploadPercent = 0;
                 lastUpload = fileKey;
                 scheduleStaleTimeout(notifId, fileKey, true);
+
             } else if (ACTION_UPLOAD_PROGRESS.equals(action)) {
                 String key = intent.getStringExtra("key");
                 int percent = intent.getIntExtra("percent", -1);
@@ -96,8 +97,10 @@ public class ForegroundService extends Service {
                 updateProgressNotificationById(notifId, matchKey, percent);
                 uploadPercent = percent;
                 lastUpload = matchKey;
+
             } else if (ACTION_UPLOAD_COMPLETED.equals(action)) {
                 String key = intent.getStringExtra("key");
+
                 String matchKey = findUploadKeyMatching(key);
                 if (matchKey == null) matchKey = key;
 
@@ -112,6 +115,7 @@ public class ForegroundService extends Service {
 
                 uploadPercent = -1;
                 lastUpload = matchKey != null ? matchKey : "";
+
             } else if (ACTION_STOP_FOREGROUND.equals(action)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     stopForeground(Service.STOP_FOREGROUND_REMOVE);
@@ -164,6 +168,7 @@ public class ForegroundService extends Service {
             );
             channel.setDescription("進行状況通知");
             channel.setShowBadge(false);
+
             nm.createNotificationChannel(channel);
         }
     }
@@ -179,6 +184,7 @@ public class ForegroundService extends Service {
 
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             pendingIntent = PendingIntent.getActivity(this, notifId, intent, PendingIntent.FLAG_IMMUTABLE);
         } else {
@@ -202,10 +208,12 @@ public class ForegroundService extends Service {
     }
 
     private void updateProgressNotificationById(int notifId, String fileKey, int percent) {
-        String channelId = notifIdToChannel.containsKey(notifId) ? notifIdToChannel.get(notifId) : CHANNEL_ID;
+        String channelId = notifIdToChannel.containsKey(notifId)
+                ? notifIdToChannel.get(notifId)
+                : CHANNEL_ID;
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                .setContentTitle("進行中")
+                .setContentTitle("アップロード中")
                 .setContentText(fileKey)
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setOnlyAlertOnce(true)
@@ -223,7 +231,9 @@ public class ForegroundService extends Service {
     }
 
     private void completeProgressNotificationById(int notifId, String fileKey, boolean isUpload) {
-        String channelId = notifIdToChannel.containsKey(notifId) ? notifIdToChannel.get(notifId) : CHANNEL_ID;
+        String channelId = notifIdToChannel.containsKey(notifId)
+                ? notifIdToChannel.get(notifId)
+                : CHANNEL_ID;
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                 .setContentTitle(isUpload ? "アップロード完了" : "完了")
@@ -233,11 +243,9 @@ public class ForegroundService extends Service {
                 .setAutoCancel(true)
                 .setOngoing(false)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setStyle(
-                        new NotificationCompat.BigTextStyle().bigText(
-                                (isUpload ? "アップロードが完了しました: " : "完了: ") + fileKey
-                        )
-                );
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(
+                        (isUpload ? "アップロードが完了しました: " : "完了: ") + fileKey
+                ));
 
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) nm.notify(notifId, builder.build());
@@ -252,7 +260,6 @@ public class ForegroundService extends Service {
         for (String k : uploadFileToNotifId.keySet()) {
             if (k != null && k.contains(shortName)) return k;
         }
-
         return null;
     }
 
@@ -303,9 +310,10 @@ public class ForegroundService extends Service {
 
     private void updateNotification() {
         String content = storageInfo;
-        Intent notificationIntent = new Intent(this, MainActivity.class);
 
+        Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
         } else {
@@ -329,18 +337,10 @@ public class ForegroundService extends Service {
         }
 
         if (!running) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForeground(NOTIFICATION_ID, notification);
-            } else {
-                startForeground(NOTIFICATION_ID, notification);
-            }
+            startForeground(NOTIFICATION_ID, notification);
             running = true;
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                startForeground(NOTIFICATION_ID, notification);
-            } else {
-                startForeground(NOTIFICATION_ID, notification);
-            }
+            startForeground(NOTIFICATION_ID, notification);
         }
     }
 
