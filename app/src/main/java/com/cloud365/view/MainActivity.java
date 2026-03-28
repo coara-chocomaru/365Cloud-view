@@ -34,6 +34,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -143,126 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 view.evaluateJavascript(jsViewport, null);
                 applyMobileOptimizations();
                 saveCookies();
-
-                view.evaluateJavascript("(function(){\n" +
-                        "if(!window._cloud365ActiveUploads) window._cloud365ActiveUploads = {};\n" +
-                        "function sendStorageInfoIfExists(){\n" +
-                        "  try{\n" +
-                        "    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n" +
-                        "    if(el){\n" +
-                        "      var text = (typeof el.innerText !== 'undefined')? el.innerText : (el.textContent||'');\n" +
-                        "      if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(text);\n" +
-                        "      return true;\n" +
-                        "    }\n" +
-                        "    if (typeof getStorageInfo === 'function'){\n" +
-                        "      try{\n" +
-                        "        var val = getStorageInfo();\n" +
-                        "        if(val && window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(String(val));\n" +
-                        "        return true;\n" +
-                        "      }catch(e){}\n" +
-                        "    }\n" +
-                        "  }catch(e){}\n" +
-                        "  return false;\n" +
-                        "}\n" +
-                        "function observeStorage(){\n" +
-                        "  try{\n" +
-                        "    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n" +
-                        "    if(el){\n" +
-                        "      try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){}\n" +
-                        "      var mo = new MutationObserver(function(){ try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){} });\n" +
-                        "      mo.observe(el,{childList:true,characterData:true,subtree:true});\n" +
-                        "      return;\n" +
-                        "    }\n" +
-                        "  }catch(e){}\n" +
-                        "  var tries = 0;\n" +
-                        "  var maxTries = 30;\n" +
-                        "  var poll = setInterval(function(){\n" +
-                        "    tries++;\n" +
-                        "    if(sendStorageInfoIfExists() || tries>=maxTries) clearInterval(poll);\n" +
-                        "  },1000);\n" +
-                        "}\n" +
-                        "function wrapXHR(){\n" +
-                        "  try{\n" +
-                        "    if(XMLHttpRequest.prototype._cloud365Wrapped) return;\n" +
-                        "    XMLHttpRequest.prototype._cloud365Wrapped = true;\n" +
-                        "    var origOpen = XMLHttpRequest.prototype.open;\n" +
-                        "    var origSend = XMLHttpRequest.prototype.send;\n" +
-                        "    XMLHttpRequest.prototype.open = function(method,url,async){\n" +
-                        "      try{ this._cloudUrl = url; }catch(e){}\n" +
-                        "      return origOpen.apply(this, arguments);\n" +
-                        "    };\n" +
-                        "    XMLHttpRequest.prototype.send = function(body){\n" +
-                        "      try{\n" +
-                        "        var filenames = [];\n" +
-                        "        if(body instanceof FormData){\n" +
-                        "          for(var pair of body.entries()){\n" +
-                        "            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n" +
-                        "          }\n" +
-                        "        }\n" +
-                        "        if(!filenames.length && body && body.name) filenames.push(body.name);\n" +
-                        "        if(filenames.length){\n" +
-                        "          var key = filenames[0];\n" +
-                        "          if(window._cloud365ActiveUploads[key]){} else {\n" +
-                        "            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n" +
-                        "            window._cloud365ActiveUploads[key] = true;\n" +
-                        "          }\n" +
-                        "          if(this.upload && typeof this.upload.addEventListener === 'function'){\n" +
-                        "            this.upload.addEventListener('progress', function(e){\n" +
-                        "              try{\n" +
-                        "                if(e.lengthComputable){\n" +
-                        "                  var percent = Math.round((e.loaded/e.total)*100);\n" +
-                        "                  try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadProgress) AndroidAppBridge.uploadProgress(key, percent); }catch(e){}\n" +
-                        "                }\n" +
-                        "              }catch(e){}\n" +
-                        "            });\n" +
-                        "          }\n" +
-                        "          this.addEventListener('load', function(){\n" +
-                        "            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n" +
-                        "            try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n" +
-                        "          });\n" +
-                        "          this.addEventListener('error', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n" +
-                        "          this.addEventListener('abort', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n" +
-                        "        }\n" +
-                        "      }catch(e){}\n" +
-                        "      return origSend.apply(this, arguments);\n" +
-                        "    };\n" +
-                        "  }catch(e){}\n" +
-                        "}\n" +
-                        "function wrapFetch(){\n" +
-                        "  try{\n" +
-                        "    if(!window.fetch || window.fetch._cloud365Wrapped) return;\n" +
-                        "    var origFetch = window.fetch;\n" +
-                        "    window.fetch = function(input, init){\n" +
-                        "      var filenames = [];\n" +
-                        "      try{\n" +
-                        "        if(init && init.body && init.body instanceof FormData){\n" +
-                        "          for(var pair of init.body.entries()){\n" +
-                        "            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n" +
-                        "          }\n" +
-                        "        }\n" +
-                        "      }catch(e){}\n" +
-                        "      if(filenames.length){\n" +
-                        "        var key = filenames[0];\n" +
-                        "        if(!window._cloud365ActiveUploads[key]){\n" +
-                        "          try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n" +
-                        "          window._cloud365ActiveUploads[key] = true;\n" +
-                        "        }\n" +
-                        "        return origFetch.apply(this, arguments).then(function(response){\n" +
-                        "          try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n" +
-                        "          try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n" +
-                        "          return response;\n" +
-                        "        }).catch(function(err){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){}; throw err; });\n" +
-                        "      } else {\n" +
-                        "        return origFetch.apply(this, arguments);\n" +
-                        "      }\n" +
-                        "    };\n" +
-                        "    window.fetch._cloud365Wrapped = true;\n" +
-                        "  }catch(e){}\n" +
-                        "}\n" +
-                        "observeStorage();\n" +
-                        "wrapXHR();\n" +
-                        "wrapFetch();\n" +
-                        "})();", null);
+                view.evaluateJavascript("(function(){\nif(!window._cloud365ActiveUploads) window._cloud365ActiveUploads = {};\nfunction sendStorageInfoIfExists(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      var text = (typeof el.innerText !== 'undefined')? el.innerText : (el.textContent||'');\n      if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(text);\n      return true;\n    }\n    if (typeof getStorageInfo === 'function'){\n      try{\n        var val = getStorageInfo();\n        if(val && window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(String(val));\n        return true;\n      }catch(e){}\n    }\n  }catch(e){}\n  return false;\n}\nfunction observeStorage(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){}\n      var mo = new MutationObserver(function(){ try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){} });\n      mo.observe(el,{childList:true,characterData:true,subtree:true});\n      return;\n    }\n  }catch(e){}\n  var tries = 0;\n  var maxTries = 30;\n  var poll = setInterval(function(){\n    tries++;\n    if(sendStorageInfoIfExists() || tries>=maxTries) clearInterval(poll);\n  },1000);\n}\nfunction wrapXHR(){\n  try{\n    if(XMLHttpRequest.prototype._cloud365Wrapped) return;\n    XMLHttpRequest.prototype._cloud365Wrapped = true;\n    var origOpen = XMLHttpRequest.prototype.open;\n    var origSend = XMLHttpRequest.prototype.send;\n    XMLHttpRequest.prototype.open = function(method,url,async){\n      try{ this._cloudUrl = url; }catch(e){}\n      return origOpen.apply(this, arguments);\n    };\n    XMLHttpRequest.prototype.send = function(body){\n      try{\n        var filenames = [];\n        if(body instanceof FormData){\n          for(var pair of body.entries()){\n            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n          }\n        }\n        if(!filenames.length && body && body.name) filenames.push(body.name);\n        if(filenames.length){\n          var key = filenames[0];\n          if(window._cloud365ActiveUploads[key]){} else {\n            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n            window._cloud365ActiveUploads[key] = true;\n          }\n          if(this.upload && typeof this.upload.addEventListener === 'function'){\n            this.upload.addEventListener('progress', function(e){\n              try{\n                if(e.lengthComputable){\n                  var percent = Math.round((e.loaded/e.total)*100);\n                  try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadProgress) AndroidAppBridge.uploadProgress(key, percent); }catch(e){}\n                }\n              }catch(e){}\n            });\n          }\n          this.addEventListener('load', function(){\n            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n            try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n          });\n          this.addEventListener('error', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n          this.addEventListener('abort', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n        }\n      }catch(e){}\n      return origSend.apply(this, arguments);\n    };\n  }catch(e){}\n}\nfunction wrapFetch(){\n  try{\n    if(!window.fetch || window.fetch._cloud365Wrapped) return;\n    var origFetch = window.fetch;\n    window.fetch = function(input, init){\n      var filenames = [];\n      try{\n        if(init && init.body && init.body instanceof FormData){\n          for(var pair of init.body.entries()){\n            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n          }\n        }\n      }catch(e){}\n      if(filenames.length){\n        var key = filenames[0];\n        if(!window._cloud365ActiveUploads[key]){\n          try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n          window._cloud365ActiveUploads[key] = true;\n        }\n        return origFetch.apply(this, arguments).then(function(response){\n          try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n          try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n          return response;\n        }).catch(function(err){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){}; throw err; });\n      } else {\n        return origFetch.apply(this, arguments);\n      }\n    };\n    window.fetch._cloud365Wrapped = true;\n  }catch(e){}\n}\nobserveStorage();\nwrapXHR();\nwrapFetch();\n})();", null);
 
                 view.evaluateJavascript("(function(){var e=document.getElementById('storage-info'); if(e) return e.innerText; if(typeof getStorageInfo === 'function') return getStorageInfo(); return null; })();", value -> {
                     if (value != null && !"null".equals(value)) {
@@ -308,6 +193,45 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceivedClientCertRequest(WebView view, ClientCertRequest request) {
                 request.cancel();
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                try {
+                    String url = request.getUrl().toString();
+                    Uri uri = request.getUrl();
+                    String path = uri.getPath();
+                    if (path == null) return super.shouldInterceptRequest(view, request);
+                    if (path.endsWith("/indexhtml.js") || path.endsWith("/indexhtml.js/") || path.endsWith("/indexhtml.js?")) {
+                        InputStream is = getAssetStream("indexhtml.js");
+                        if (is != null) return new WebResourceResponse("application/javascript", "UTF-8", is);
+                    }
+                    if (path.endsWith("/index.html") || path.equals("/") || path.endsWith("/index")) {
+                        InputStream is = getAssetStream("index.html");
+                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
+                    }
+                } catch (Exception e) {
+                }
+                return super.shouldInterceptRequest(view, request);
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                try {
+                    Uri uri = Uri.parse(url);
+                    String path = uri.getPath();
+                    if (path == null) return super.shouldInterceptRequest(view, url);
+                    if (path.endsWith("/indexhtml.js")) {
+                        InputStream is = getAssetStream("indexhtml.js");
+                        if (is != null) return new WebResourceResponse("application/javascript", "UTF-8", is);
+                    }
+                    if (path.endsWith("/index.html") || path.equals("/") || path.endsWith("/index")) {
+                        InputStream is = getAssetStream("index.html");
+                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
+                    }
+                } catch (Exception e) {
+                }
+                return super.shouldInterceptRequest(view, url);
             }
         });
 
@@ -388,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 if (isAutoRefreshRunning && !isFinishing()) {
-                    handler.postDelayed(autoRefreshRunnable, 30000); // 30秒に緩和（頻繁なリロードが同期崩れの原因）
+                    handler.postDelayed(autoRefreshRunnable, 30000);
                 }
             };
         }
@@ -402,6 +326,14 @@ public class MainActivity extends AppCompatActivity {
         isAutoRefreshRunning = false;
         if (handler != null && autoRefreshRunnable != null) {
             handler.removeCallbacks(autoRefreshRunnable);
+        }
+    }
+
+    private InputStream getAssetStream(String name) {
+        try {
+            return getAssets().open(name);
+        } catch (IOException e) {
+            return null;
         }
     }
 
@@ -473,7 +405,28 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadMainPage() {
         restoreCookies();
-        webView.loadUrl(BASE_URL + "index.html");
+        String html = readAssetFile("index.html");
+        if (html != null) {
+            webView.loadDataWithBaseURL(BASE_URL, html, "text/html", "UTF-8", null);
+        } else {
+            webView.loadUrl(BASE_URL + "index.html");
+        }
+    }
+
+    private String readAssetFile(String name) {
+        try {
+            InputStream is = getAssets().open(name);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            br.close();
+            return sb.toString();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void restoreCookies() {
@@ -594,10 +547,7 @@ public class MainActivity extends AppCompatActivity {
 
     private class WebAppInterface {
         Context ctx;
-
-        WebAppInterface(Context c) {
-            ctx = c;
-        }
+        WebAppInterface(Context c) { ctx = c; }
 
         @JavascriptInterface
         public void sendStorageInfo(String info) {
