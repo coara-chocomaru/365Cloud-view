@@ -47,6 +47,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String BASE_URL = "https://yuto-365.ddns.net/365Cloud/";
     private static final String PREFS_NAME = "LoginPrefs";
     private static final String KEY_COOKIES = "cookies";
+    private static final String ASSET_INDEX_HTML = "index.html";
+    private static final String ASSET_INDEX_JS = "indexhtml.js";
+    private static final String ASSET_SETTINGS_HTML = "settings.html";
+    private static final String ASSET_SHARE_MANAGEMENT_HTML = "share-management.html";
     private static final int FILE_CHOOSER_RESULT_CODE = 1;
     private static final int REQ_POST_NOTIF = 101;
     private static final int REQ_STORAGE = 102;
@@ -147,10 +151,13 @@ public class MainActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 progressBar.setVisibility(View.GONE);
                 view.evaluateJavascript(jsViewport, null);
-                if (!url.contains("settings.html")) {
+
+                if (!isLocalAssetPageUrl(url)) {
                     applyMobileOptimizations();
                 }
+
                 saveCookies();
+
                 view.evaluateJavascript("(function(){\nif(window._cloud365Injected) return;\nwindow._cloud365Injected = true;\nif(!window._cloud365ActiveUploads) window._cloud365ActiveUploads = {};\nfunction sendStorageInfoIfExists(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      var text = (typeof el.innerText !== 'undefined')? el.innerText : (el.textContent||'');\n      if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(text);\n      return true;\n    }\n    if (typeof getStorageInfo === 'function'){\n      try{\n        var val = getStorageInfo();\n        if(val && window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(String(val));\n        return true;\n      }catch(e){}\n    }\n  }catch(e){}\n  return false;\n}\nfunction observeStorage(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){}\n      var mo = new MutationObserver(function(){ try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){} });\n      mo.observe(el,{childList:true,characterData:true,subtree:true});\n      return;\n    }\n  }catch(e){}\n  var tries = 0;\n  var maxTries = 30;\n  var poll = setInterval(function(){\n    tries++;\n    if(sendStorageInfoIfExists() || tries>=maxTries) clearInterval(poll);\n  },1000);\n}\nfunction wrapXHR(){\n  try{\n    if(XMLHttpRequest.prototype._cloud365Wrapped) return;\n    XMLHttpRequest.prototype._cloud365Wrapped = true;\n    var origOpen = XMLHttpRequest.prototype.open;\n    var origSend = XMLHttpRequest.prototype.send;\n    XMLHttpRequest.prototype.open = function(method,url,async){\n      try{ this._cloudUrl = url; }catch(e){}\n      return origOpen.apply(this, arguments);\n    };\n    XMLHttpRequest.prototype.send = function(body){\n      try{\n        var filenames = [];\n        if(body instanceof FormData){\n          for(var pair of body.entries()){\n            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n          }\n        }\n        if(!filenames.length && body && body.name) filenames.push(body.name);\n        if(filenames.length){\n          var key = filenames[0];\n          var url = this._cloudUrl || '';\n          if(url.includes('/upload-files') || url.includes('/upload-chunk') || url.includes('/api/upload-chunk')){\n            if(window._cloud365ActiveUploads[key]){} else {\n              try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n              window._cloud365ActiveUploads[key] = true;\n            }\n            if(this.upload && typeof this.upload.addEventListener === 'function'){\n              this.upload.addEventListener('progress', function(e){\n                try{\n                  if(e.lengthComputable){\n                    var percent = Math.round((e.loaded/e.total)*100);\n                    try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadProgress) AndroidAppBridge.uploadProgress(key, percent); }catch(e){}\n                  }\n                }catch(e){}\n              });\n            }\n            this.addEventListener('load', function(){\n              try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n              try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n            });\n            this.addEventListener('error', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n            this.addEventListener('abort', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n          }\n        }\n      }catch(e){}\n      return origSend.apply(this, arguments);\n    };\n  }catch(e){}\n}\nfunction wrapFetch(){\n  try{\n    if(!window.fetch || window.fetch._cloud365Wrapped) return;\n    var origFetch = window.fetch;\n    window.fetch = function(input, init){\n      var filenames = [];\n      try{\n        if(init && init.body && init.body instanceof FormData){\n          for(var pair of init.body.entries()){\n            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n          }\n        }\n      }catch(e){}\n      if(filenames.length){\n        var key = filenames[0];\n        var url = (typeof input === 'string') ? input : (input && input.url ? input.url : '');\n        if(url.includes('/upload-files') || url.includes('/upload-chunk') || url.includes('/api/upload-chunk')){\n          if(!window._cloud365ActiveUploads[key]){\n            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n            window._cloud365ActiveUploads[key] = true;\n          }\n          return origFetch.apply(this, arguments).then(function(response){\n            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n            try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n            return response;\n          }).catch(function(err){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){}; throw err; });\n        } else {\n          return origFetch.apply(this, arguments);\n        }\n      } else {\n        return origFetch.apply(this, arguments);\n      }\n    };\n    window.fetch._cloud365Wrapped = true;\n  }catch(e){}\n}\nobserveStorage();\nwrapXHR();\nwrapFetch();\nvar deselectBtn=document.querySelector('.nav-item[data-target=\"files\"]');if(deselectBtn){deselectBtn.addEventListener('click',function(){try{var fileInput=document.getElementById('file-upload')||document.querySelector('input[type=\"file\"]');var hasFiles=fileInput&&fileInput.files&&fileInput.files.length>0;if(hasFiles){if(window.AndroidAppBridge&&AndroidAppBridge.fileDeselected)AndroidAppBridge.fileDeselected();}else{if(window.AndroidAppBridge&&AndroidAppBridge.fileNotSelected)AndroidAppBridge.fileNotSelected();}}catch(e){}},true);}document.getElementById('upload-button').addEventListener('click',function(){var fileInput=document.getElementById('file-upload');if(!fileInput||!fileInput.files||fileInput.files.length===0){if(window.AndroidAppBridge&&AndroidAppBridge.showToast)AndroidAppBridge.showToast('ファイルを選択してください');}},true);})();", null);
 
                 view.evaluateJavascript("(function(){var e=document.getElementById('storage-info'); if(e) return e.innerText; if(typeof getStorageInfo === 'function') return getStorageInfo(); return null; })();", value -> {
@@ -173,14 +180,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
+
+                if (isLocalAssetPageUrl(url)) {
+                    loadAssetPageFromUrl(url);
+                    return true;
+                }
+
                 if (url.contains("login.html") || url.contains("register.html")) {
                     redirectToLogin();
                     return true;
                 }
+
                 if (url.contains("/download")) {
                     startDownload(url);
                     return true;
                 }
+
                 return super.shouldOverrideUrlLoading(view, request);
             }
 
@@ -204,20 +219,42 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 try {
-                    String url = request.getUrl().toString();
                     Uri uri = request.getUrl();
                     String path = uri.getPath();
-                    if (path == null) return super.shouldInterceptRequest(view, request);
-                    if (path.endsWith("/indexhtml.js") || path.endsWith("/indexhtml.js/") || path.endsWith("/indexhtml.js?")) {
-                        InputStream is = getAssetStream("indexhtml.js");
-                        if (is != null) return new WebResourceResponse("application/javascript", "UTF-8", is);
+                    if (path == null) {
+                        return super.shouldInterceptRequest(view, request);
                     }
-                    if (path.endsWith("/index.html") || path.equals("/") || path.endsWith("/index")) {
-                        InputStream is = getAssetStream("index.html");
-                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
+
+                    if (isIndexJsPath(path)) {
+                        InputStream is = getAssetStream(ASSET_INDEX_JS);
+                        if (is != null) {
+                            return new WebResourceResponse("application/javascript", "UTF-8", is);
+                        }
                     }
-                } catch (Exception e) {
+
+                    if (isIndexHtmlPath(path)) {
+                        InputStream is = getAssetStream(ASSET_INDEX_HTML);
+                        if (is != null) {
+                            return new WebResourceResponse("text/html", "UTF-8", is);
+                        }
+                    }
+
+                    if (isSettingsHtmlPath(path)) {
+                        InputStream is = getAssetStream(ASSET_SETTINGS_HTML);
+                        if (is != null) {
+                            return new WebResourceResponse("text/html", "UTF-8", is);
+                        }
+                    }
+
+                    if (isShareManagementHtmlPath(path)) {
+                        InputStream is = getAssetStream(ASSET_SHARE_MANAGEMENT_HTML);
+                        if (is != null) {
+                            return new WebResourceResponse("text/html", "UTF-8", is);
+                        }
+                    }
+                } catch (Exception ignored) {
                 }
+
                 return super.shouldInterceptRequest(view, request);
             }
 
@@ -226,17 +263,40 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     Uri uri = Uri.parse(url);
                     String path = uri.getPath();
-                    if (path == null) return super.shouldInterceptRequest(view, url);
-                    if (path.endsWith("/indexhtml.js")) {
-                        InputStream is = getAssetStream("indexhtml.js");
-                        if (is != null) return new WebResourceResponse("application/javascript", "UTF-8", is);
+                    if (path == null) {
+                        return super.shouldInterceptRequest(view, url);
                     }
-                    if (path.endsWith("/index.html") || path.equals("/") || path.endsWith("/index")) {
-                        InputStream is = getAssetStream("index.html");
-                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
+
+                    if (isIndexJsPath(path)) {
+                        InputStream is = getAssetStream(ASSET_INDEX_JS);
+                        if (is != null) {
+                            return new WebResourceResponse("application/javascript", "UTF-8", is);
+                        }
                     }
-                } catch (Exception e) {
+
+                    if (isIndexHtmlPath(path)) {
+                        InputStream is = getAssetStream(ASSET_INDEX_HTML);
+                        if (is != null) {
+                            return new WebResourceResponse("text/html", "UTF-8", is);
+                        }
+                    }
+
+                    if (isSettingsHtmlPath(path)) {
+                        InputStream is = getAssetStream(ASSET_SETTINGS_HTML);
+                        if (is != null) {
+                            return new WebResourceResponse("text/html", "UTF-8", is);
+                        }
+                    }
+
+                    if (isShareManagementHtmlPath(path)) {
+                        InputStream is = getAssetStream(ASSET_SHARE_MANAGEMENT_HTML);
+                        if (is != null) {
+                            return new WebResourceResponse("text/html", "UTF-8", is);
+                        }
+                    }
+                } catch (Exception ignored) {
                 }
+
                 return super.shouldInterceptRequest(view, url);
             }
         });
@@ -280,6 +340,63 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         getOnBackPressedDispatcher().addCallback(this, backPressedCallback);
+    }
+
+    private boolean isIndexJsPath(String path) {
+        return path.endsWith("/" + ASSET_INDEX_JS) || path.equals("/" + ASSET_INDEX_JS) || path.endsWith("/" + ASSET_INDEX_JS + "/");
+    }
+
+    private boolean isIndexHtmlPath(String path) {
+        return path.endsWith("/" + ASSET_INDEX_HTML) || path.equals("/" + ASSET_INDEX_HTML) || path.endsWith("/" + ASSET_INDEX_HTML + "/");
+    }
+
+    private boolean isSettingsHtmlPath(String path) {
+        return path.endsWith("/" + ASSET_SETTINGS_HTML) || path.equals("/" + ASSET_SETTINGS_HTML) || path.endsWith("/" + ASSET_SETTINGS_HTML + "/");
+    }
+
+    private boolean isShareManagementHtmlPath(String path) {
+        return path.endsWith("/" + ASSET_SHARE_MANAGEMENT_HTML) || path.equals("/" + ASSET_SHARE_MANAGEMENT_HTML) || path.endsWith("/" + ASSET_SHARE_MANAGEMENT_HTML + "/");
+    }
+
+    private boolean isLocalAssetPageUrl(String url) {
+        if (url == null) return false;
+        try {
+            Uri uri = Uri.parse(url);
+            String path = uri.getPath();
+            if (path == null) return false;
+            return isSettingsHtmlPath(path) || isShareManagementHtmlPath(path);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void loadAssetPageFromUrl(String url) {
+        try {
+            Uri uri = Uri.parse(url);
+            String path = uri.getPath();
+            if (path == null) {
+                return;
+            }
+
+            if (isSettingsHtmlPath(path)) {
+                loadAssetPage(ASSET_SETTINGS_HTML, BASE_URL + ASSET_SETTINGS_HTML);
+                return;
+            }
+
+            if (isShareManagementHtmlPath(path)) {
+                loadAssetPage(ASSET_SHARE_MANAGEMENT_HTML, BASE_URL + ASSET_SHARE_MANAGEMENT_HTML);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void loadAssetPage(String assetName, String historyUrl) {
+        String html = readAssetFile(assetName);
+        if (html != null) {
+            webView.loadDataWithBaseURL(BASE_URL, html, "text/html", "UTF-8", historyUrl);
+        } else {
+            webView.loadUrl(BASE_URL + assetName);
+        }
     }
 
     private void handleBackPressed() {
@@ -375,7 +492,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             lastDownloadId = downloadManager.enqueue(request);
-
             Toast.makeText(this, "ダウンロードを開始しました: " + fileName, Toast.LENGTH_SHORT).show();
 
         } catch (Exception e) {
@@ -422,7 +538,7 @@ public class MainActivity extends AppCompatActivity {
                         result = cursor.getString(nameIndex);
                     }
                 }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             } finally {
                 if (cursor != null) {
                     cursor.close();
@@ -445,11 +561,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadMainPage() {
         restoreCookies();
-        String html = readAssetFile("index.html");
+        String html = readAssetFile(ASSET_INDEX_HTML);
         if (html != null) {
-            webView.loadDataWithBaseURL(BASE_URL, html, "text/html", "UTF-8", null);
+            webView.loadDataWithBaseURL(BASE_URL, html, "text/html", "UTF-8", BASE_URL + ASSET_INDEX_HTML);
         } else {
-            webView.loadUrl(BASE_URL + "index.html");
+            webView.loadUrl(BASE_URL + ASSET_INDEX_HTML);
         }
     }
 
@@ -592,7 +708,7 @@ public class MainActivity extends AppCompatActivity {
         if (intent == null) return;
         try {
             sendBroadcast(intent);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
@@ -614,8 +730,6 @@ public class MainActivity extends AppCompatActivity {
             if (isFinishing()) return;
             broadcastStorageUpdate(info);
         }
-
-
 
         @JavascriptInterface
         public void fileDeselected() {
