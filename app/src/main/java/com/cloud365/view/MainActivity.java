@@ -615,48 +615,7 @@ public class MainActivity extends AppCompatActivity {
             broadcastStorageUpdate(info);
         }
 
-        @JavascriptInterface
-        public void uploadStarted(String filenamesJson) {
-            if (isFinishing()) return;
-            handler.post(() -> {
-                try {
-                    Toast.makeText(MainActivity.this, "アップロード開始", Toast.LENGTH_SHORT).show();
-                    Intent i = new Intent(ForegroundService.ACTION_UPLOAD_STARTED);
-                    i.putExtra("files", filenamesJson != null ? filenamesJson : "");
-                    sendBroadcastToService(i);
-                } catch (Exception e) {
-                }
-            });
-        }
 
-        @JavascriptInterface
-        public void uploadProgress(String key, int percent) {
-            if (isFinishing()) return;
-            handler.post(() -> {
-                try {
-                    progressBar.setProgress(percent);
-                    Intent i = new Intent(ForegroundService.ACTION_UPLOAD_PROGRESS);
-                    i.putExtra("key", key != null ? key : "");
-                    i.putExtra("percent", percent);
-                    sendBroadcastToService(i);
-                } catch (Exception e) {
-                }
-            });
-        }
-
-        @JavascriptInterface
-        public void uploadCompleted(String key) {
-            if (isFinishing()) return;
-            handler.post(() -> {
-                try {
-                    Toast.makeText(MainActivity.this, "アップロード完了", Toast.LENGTH_SHORT).show();
-                    Intent i = new Intent(ForegroundService.ACTION_UPLOAD_COMPLETED);
-                    i.putExtra("key", key != null ? key : "");
-                    sendBroadcastToService(i);
-                } catch (Exception e) {
-                }
-            });
-        }
 
         @JavascriptInterface
         public void fileDeselected() {
