@@ -450,6 +450,62 @@
             });
 
             activateSection(window.location.hash);
+
+            const avatarUpload = document.getElementById('avatar-upload');
+            const uploadAvatarButton = document.getElementById('upload-avatar-button');
+            const avatarPreview = document.getElementById('avatar-preview');
+            const messageDiv = document.getElementById('message');
+
+            function showMessage(text, isSuccess) {
+                messageDiv.textContent = text;
+                messageDiv.className = isSuccess ? 'success' : 'error';
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 4000);
+            }
+
+            if (uploadAvatarButton && avatarUpload) {
+                uploadAvatarButton.addEventListener('click', async () => {
+                    const file = avatarUpload.files[0];
+                    if (!file) {
+                        showMessage('アップロードする画像を選択してください。', false);
+                        return;
+                    }
+
+                    if (!file.type.startsWith('image/')) {
+                        showMessage('画像ファイルのみアップロード可能です。', false);
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('avatar', file);
+
+                    try {
+                        uploadAvatarButton.disabled = true;
+                        uploadAvatarButton.textContent = 'アップロード中...';
+
+                        const response = await fetch('/365Cloud/api/user/avatar', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const timestamp = new Date().getTime();
+                            avatarPreview.src = `/365Cloud/api/user/avatar?t=${timestamp}`;
+                            showMessage('アバター画像を更新しました。', true);
+                            avatarUpload.value = '';
+                        } else {
+                            const errorText = await response.text();
+                            showMessage('アップロードに失敗しました: ' + (errorText || response.statusText), false);
+                        }
+                    } catch (error) {
+                        showMessage('通信エラーが発生しました。', false);
+                    } finally {
+                        uploadAvatarButton.disabled = false;
+                        uploadAvatarButton.textContent = 'アップロード';
+                    }
+                });
+            }
         });
     </script>
 </body>
