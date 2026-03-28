@@ -2,53 +2,67 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ユーザー設定 - 365Cloud</title>
-    <link rel="stylesheet" href="365Cloud.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/365Cloud/365Cloud_Mainicon.png">
+    <link rel="apple-touch-icon" href="/365Cloud/365Cloud_Mainicon.png">
+    <link rel="shortcut icon" href="/365Cloud/365Cloud_Mainicon.png">
     <style>
         :root {
-            --card-bg-color: var(--bg-color-app);
-            --card-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            --card-border-color: var(--border-color-secondary);
-            --input-bg-color: var(--bg-color-main);
-            --nav-bg-color: var(--bg-color-sidebar);
-            --nav-link-hover-bg: var(--bg-color-action-section);
-            --nav-link-active-bg: var(--accent-color);
+            --bg-body: #0f172a;
+            --bg-header: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --accent: #3b82f6;
+            --border: #334155;
         }
-        body.dark-mode {
-            --bg-color-body: #0f172a;
-            --card-bg-color: var(--bg-color-action-section);
-            --card-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            --card-border-color: #444;
-            --input-bg-color: var(--bg-color-file-item);
-            --nav-bg-color: #1e293b;
-            --nav-link-hover-bg: #2a2f3b;
-            --nav-link-active-bg: var(--accent-color-dark-theme);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
             min-height: 100vh;
-            height: auto;
-            padding: 0;
-            background-color: var(--bg-color-body);
-            color: var(--text-color-primary);
-            transition: background-color 0.3s, color 0.3s;
+            padding-bottom: 20px;
+            line-height: 1.5;
         }
         .settings-header {
-            padding: 15px 20px;
-            background-color: var(--nav-bg-color);
-            border-bottom: 1px solid var(--card-border-color);
+            background-color: var(--bg-header);
+            padding: 15px 16px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .settings-header h1 {
-            font-size: 1.6em;
-            margin: 0;
+            font-size: 1.55em;
+            font-weight: 600;
+        }
+        .back-button {
+            background-color: #334155;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 9999px;
+            font-size: 0.95em;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         .settings-nav {
-            background-color: var(--nav-bg-color);
-            border-bottom: 1px solid var(--card-border-color);
+            background-color: var(--bg-header);
+            border-bottom: 1px solid var(--border);
             padding: 8px 0;
         }
         .settings-nav ul {
@@ -56,73 +70,70 @@
             padding: 0;
             margin: 0;
             display: flex;
-            flex-direction: row;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            width: 100%;
+            gap: 4px;
+            padding-left: 12px;
         }
         .settings-nav li {
-            flex: 1 0 auto;
-            min-width: 70px;
+            flex: 0 0 auto;
         }
         .settings-nav li a {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            padding: 10px 8px;
-            color: var(--text-color-primary);
+            padding: 10px 14px;
+            color: var(--text-primary);
             text-decoration: none;
+            font-size: 0.82em;
             font-weight: 500;
-            font-size: 0.85em;
-            transition: background-color 0.2s, color 0.2s;
+            border-radius: 12px;
+            min-width: 72px;
+            transition: background-color 0.2s;
         }
         .settings-nav li a .fa-fw {
-            width: 24px;
             font-size: 1.45em;
         }
         .settings-nav li a:hover {
-            background-color: var(--nav-link-hover-bg);
+            background-color: #334155;
         }
         .settings-nav li a.active {
-            background-color: var(--nav-link-active-bg);
+            background-color: var(--accent);
             color: white;
         }
-        .settings-content {
-            padding: 20px 15px;
+        .main-content {
+            padding: 20px 16px;
         }
         .settings-section {
             display: none;
         }
         .settings-section.active {
             display: block;
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.4s ease-out;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .section-description {
-            margin-top: -10px;
-            margin-bottom: 25px;
-            color: var(--text-color-secondary);
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            margin-bottom: 20px;
         }
         .card {
-            background-color: var(--card-bg-color);
+            background-color: var(--bg-card);
+            border-radius: 16px;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 25px;
-            border: 1px solid var(--card-border-color);
-            transition: background-color 0.3s, border-color 0.3s;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
         }
         .card h2 {
-            color: var(--text-color-heading);
-            border-bottom: 1px solid var(--border-color-secondary);
-            padding-bottom: 15px;
-            margin-top: 0;
-            margin-bottom: 20px;
             font-size: 1.45em;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
         }
         .form-group {
             margin-bottom: 20px;
@@ -131,29 +142,36 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--text-color-secondary);
+            color: var(--text-secondary);
+            font-size: 0.95em;
         }
-        input[type="text"], input[type="password"], input[type="file"] {
+        input[type="text"],
+        input[type="password"],
+        input[type="file"] {
             width: 100%;
-            background-color: var(--input-bg-color);
-            color: var(--text-color-primary);
-            border: 1px solid var(--border-color-primary);
+            padding: 14px 16px;
+            background-color: #334155;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1em;
         }
         #message {
+            margin: 12px 16px;
+            padding: 12px;
+            border-radius: 8px;
             text-align: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            border-radius: 5px;
+            font-weight: 500;
             display: none;
         }
         #message.success {
-            background-color: rgba(40, 167, 69, 0.2);
-            color: var(--text-color-message-success);
+            background-color: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
             display: block;
         }
         #message.error {
-            background-color: rgba(220, 53, 69, 0.2);
-            color: var(--text-color-message-error);
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
             display: block;
         }
         .avatar-preview-container {
@@ -165,196 +183,274 @@
         #avatar-preview {
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--border-color-primary);
-        }
-        .status-indicator {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-        .status-indicator.enabled {
-            background-color: rgba(40, 167, 69, 0.3);
-            color: #20c997;
-        }
-        .status-indicator.disabled {
-            background-color: rgba(108, 117, 125, 0.3);
-            color: #adb5bd;
-        }
-        .history-table-container {
-            max-height: 380px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color-primary);
-            border-radius: 8px;
-        }
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .history-table th, .history-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color-primary);
-        }
-        .history-table th {
-            background-color: var(--input-bg-color);
-            position: sticky;
-            top: 0;
-        }
-        .history-table tr:last-child td {
-            border-bottom: none;
+            border: 3px solid var(--accent);
+            width: 72px;
+            height: 72px;
         }
         .username-form-group {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
         .username-form-group label {
             flex-shrink: 0;
-            margin-bottom: 0;
         }
         .username-form-group input {
-            flex-grow: 1;
-            min-width: 200px;
+            flex: 1;
+            min-width: 180px;
         }
         .username-form-group button {
             flex-shrink: 0;
+            padding: 12px 24px;
+        }
+        .history-table-container {
+            max-height: 380px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background-color: #1e293b;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .history-table th,
+        .history-table td {
+            padding: 14px 12px;
+            text-align: left;
+            font-size: 0.95em;
+            border-bottom: 1px solid var(--border);
+        }
+        .history-table th {
+            background-color: #0f172a;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .status-indicator.enabled {
+            background-color: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+        .status-indicator.disabled {
+            background-color: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background-color: #1e293b;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .close-button {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            font-size: 30px;
+            color: #94a3b8;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal h2 {
+            font-size: 1.45em;
+            margin-bottom: 16px;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.05em;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            margin-top: 8px;
+        }
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #64748b;
+            color: white;
+        }
+        .btn {
+            background-color: #64748b;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 1em;
         }
     </style>
-    <link rel="icon" type="image/png" href="/365Cloud/365Cloud_Mainicon.png">
-    <link rel="apple-touch-icon" href="/365Cloud/365Cloud_Mainicon.png">
-    <link rel="shortcut icon" href="/365Cloud/365Cloud_Mainicon.png">
 </head>
 <body>
-<div class="settings-header">
-    <h1>ユーザー設定</h1>
-    <a href="/365Cloud/index.html" class="btn btn-secondary">ファイル管理に戻る</a>
-</div>
-<div id="message"></div>
-<nav class="settings-nav">
-    <ul>
-        <li><a href="#profile" class="active"><i class="fas fa-user-circle fa-fw"></i> プロフィール</a></li>
-        <li><a href="#security"><i class="fas fa-shield-alt fa-fw"></i> セキュリティ</a></li>
-        <li><a href="#login-history"><i class="fas fa-history fa-fw"></i> ログイン履歴</a></li>
-        <li><a href="#appearance"><i class="fas fa-palette fa-fw"></i> 表示設定</a></li>
-    </ul>
-</nav>
-<main class="settings-content">
-    <section id="profile" class="settings-section active">
-        <h2>プロフィール設定</h2>
-        <p class="section-description">あなたの公開プロフィール情報とアバターを管理します。</p>
-        <div class="card">
-            <div class="form-group username-form-group">
-                <label for="username-input">ユーザー名</label>
-                <input type="text" id="username-input" value="" maxlength="10">
-                <button id="save-username-button" class="btn btn-primary">変更を保存</button>
-            </div>
-            <div class="form-group avatar-preview-container">
-                <img id="avatar-preview" src="/365Cloud/api/user/avatar" alt="Current Avatar" width="80" height="80">
-                <div>
-                    <label for="avatar-upload">アイコン画像を変更</label>
-                    <input type="file" id="avatar-upload" accept="image/png, image/jpeg, image/gif">
-                    <button id="upload-avatar-button">アップロード</button>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section id="security" class="settings-section">
-        <h2>セキュリティ設定</h2>
-        <p class="section-description">パスワードの変更と二要素認証（2FA）でアカウントを保護します。</p>
-        <div class="card">
-            <div class="form-group">
-                <label>パスワード</label>
-                <button id="open-password-modal">パスワードを変更</button>
-            </div>
-            <div class="form-group form-group-divider">
-                <label>二要素認証 (2FA)</label>
-                <div>
-                    <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                        ステータス: <span id="2fa-status"></span>
-                        <button id="toggle-2fa-button" class="btn-secondary"></button>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section id="login-history" class="settings-section">
-        <h2>ログイン履歴</h2>
-        <p class="section-description">あなたのアカウントへの最近のログインアクティビティを確認します。</p>
-        <div class="card">
-            <div id="login-history-container" class="history-table-container">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>日時</th>
-                            <th>IPアドレス</th>
-                        </tr>
-                    </thead>
-                    <tbody id="login-history-body">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-    <section id="appearance" class="settings-section">
-        <h2>表示設定</h2>
-        <p class="section-description">サイトの見た目をカスタマイズします。</p>
-        <div class="card">
-            <div class="form-group">
-                <label>テーマ</label>
-                <button id="dark-mode-toggle">ライトモードに切り替え</button>
-            </div>
-        </div>
-    </section>
-</main>
-<div id="password-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" id="close-password-modal">&times;</span>
-        <h2>パスワード変更</h2>
-        <form id="password-change-form">
-            <div class="form-group">
-                <label for="current-password">現在のパスワード</label>
-                <input type="password" id="current-password" required>
-            </div>
-            <div class="form-group">
-                <label for="new-password">新しいパスワード (8文字以上)</label>
-                <input type="password" id="new-password" required minlength="8">
-            </div>
-            <div class="form-group">
-                <label for="confirm-password">新しいパスワード（確認）</label>
-                <input type="password" id="confirm-password" required minlength="8">
-            </div>
-            <button type="submit">変更を保存</button>
-        </form>
+
+    <div class="settings-header">
+        <h1>ユーザー設定</h1>
+        <a href="/365Cloud/index.html" class="back-button">ファイル管理に戻る</a>
     </div>
-</div>
-<script src="settings.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const navLinks = document.querySelectorAll('.settings-nav ul a');
-        const sections = document.querySelectorAll('.settings-section');
-        const activateSection = (hash) => {
-            const targetHash = hash || '#profile';
+
+    <div id="message"></div>
+
+    <nav class="settings-nav">
+        <ul>
+            <li><a href="#profile" class="active"><i class="fas fa-user-circle fa-fw"></i> プロフィール</a></li>
+            <li><a href="#security"><i class="fas fa-shield-alt fa-fw"></i> セキュリティ</a></li>
+            <li><a href="#login-history"><i class="fas fa-history fa-fw"></i> ログイン履歴</a></li>
+            <li><a href="#appearance"><i class="fas fa-palette fa-fw"></i> 表示設定</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <section id="profile" class="settings-section active">
+            <h2>プロフィール設定</h2>
+            <p class="section-description">あなたの公開プロフィール情報とアバターを管理します。</p>
+            <div class="card">
+                <div class="form-group username-form-group">
+                    <label for="username-input">ユーザー名</label>
+                    <input type="text" id="username-input" value="" maxlength="10">
+                    <button id="save-username-button" class="btn btn-primary">変更を保存</button>
+                </div>
+                <div class="form-group avatar-preview-container">
+                    <img id="avatar-preview" src="/365Cloud/api/user/avatar" alt="Current Avatar" width="72" height="72">
+                    <div>
+                        <label for="avatar-upload">アイコン画像を変更</label>
+                        <input type="file" id="avatar-upload" accept="image/png, image/jpeg, image/gif">
+                        <button id="upload-avatar-button" class="btn">アップロード</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="security" class="settings-section">
+            <h2>セキュリティ設定</h2>
+            <p class="section-description">パスワードの変更と二要素認証（2FA）でアカウントを保護します。</p>
+            <div class="card">
+                <div class="form-group">
+                    <label>パスワード</label>
+                    <button id="open-password-modal" class="btn">パスワードを変更</button>
+                </div>
+                <div class="form-group">
+                    <label>二要素認証 (2FA)</label>
+                    <div>
+                        <p style="margin: 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            ステータス: <span id="2fa-status"></span>
+                            <button id="toggle-2fa-button" class="btn btn-secondary"></button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="login-history" class="settings-section">
+            <h2>ログイン履歴</h2>
+            <p class="section-description">あなたのアカウントへの最近のログインアクティビティを確認します。</p>
+            <div class="card">
+                <div id="login-history-container" class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>日時</th>
+                                <th>IPアドレス</th>
+                            </tr>
+                        </thead>
+                        <tbody id="login-history-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="appearance" class="settings-section">
+            <h2>表示設定</h2>
+            <p class="section-description">サイトの見た目をカスタマイズします。</p>
+            <div class="card">
+                <div class="form-group">
+                    <label>テーマ</label>
+                    <button id="dark-mode-toggle" class="btn">ライトモードに切り替え</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-password-modal">&times;</span>
+            <h2>パスワード変更</h2>
+            <form id="password-change-form">
+                <div class="form-group">
+                    <label for="current-password">現在のパスワード</label>
+                    <input type="password" id="current-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-password">新しいパスワード (8文字以上)</label>
+                    <input type="password" id="new-password" required minlength="8">
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">新しいパスワード（確認）</label>
+                    <input type="password" id="confirm-password" required minlength="8">
+                </div>
+                <button type="submit" class="btn btn-primary">変更を保存</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="settings.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.settings-nav ul a');
+            const sections = document.querySelectorAll('.settings-section');
+
+            const activateSection = (hash) => {
+                const targetHash = hash || '#profile';
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.hash === targetHash);
+                });
+                sections.forEach(section => {
+                    section.classList.toggle('active', section.id === targetHash.substring(1));
+                });
+            };
+
             navLinks.forEach(link => {
-                link.classList.toggle('active', link.hash === targetHash);
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.hash = link.hash;
+                });
             });
-            sections.forEach(section => {
-                section.classList.toggle('active', section.id === targetHash.substring(1));
+
+            window.addEventListener('hashchange', () => {
+                activateSection(window.location.hash);
             });
-        };
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.location.hash = link.hash;
-            });
-        });
-        window.addEventListener('hashchange', () => {
+
             activateSection(window.location.hash);
         });
-        activateSection(window.location.hash);
-    });
-</script>
+    </script>
 </body>
 </html>
