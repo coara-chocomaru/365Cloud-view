@@ -2,13 +2,257 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>365Cloud</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="365Cloud.css">
     <link rel="icon" type="image/png" href="/365Cloud/365Cloud_Mainicon.png">
     <link rel="apple-touch-icon" href="/365Cloud/365Cloud_Mainicon.png">
     <link rel="shortcut icon" href="/365Cloud/365Cloud_Mainicon.png">
+    
+    
+    <style>
+    
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
+            font-size: 16px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+
+        @media (max-width: 768px) {
+            
+            .mobile-header {
+                display: flex !important;
+                position: sticky;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1100;
+                height: 56px;
+                background: #fff;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                align-items: center;
+                padding: 0 12px;
+            }
+            
+            .mobile-breadcrumb {
+                display: flex !important;
+                position: sticky;
+                top: 56px;
+                z-index: 1090;
+                background: #f8f9fa;
+                border-bottom: 1px solid #ddd;
+                height: 48px;
+                align-items: center;
+                padding: 0 12px;
+                font-size: 15px;
+            }
+            
+            .sidebar {
+                display: none !important;
+                position: fixed;
+                top: 56px;
+                left: -280px;
+                bottom: 60px;
+                width: 280px;
+                background: #fff;
+                box-shadow: 4px 0 12px rgba(0,0,0,0.25);
+                z-index: 1200;
+                overflow-y: auto;
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                padding: 16px 12px;
+            }
+            
+            
+            .sidebar.open {
+                left: 0 !important;
+                display: block !important;
+            }
+            
+            
+            .sidebar h2 {
+                font-size: 1.1rem;
+                margin: 20px 0 10px 0;
+                padding-bottom: 6px;
+                border-bottom: 2px solid #4CAF50;
+            }
+            
+            .action-section {
+                margin-bottom: 24px;
+            }
+            
+            .action-section button,
+            .action-section input,
+            .action-section label {
+                width: 100%;
+                min-height: 48px;
+                font-size: 1.05rem;
+                margin-bottom: 8px;
+                padding: 12px;
+            }
+            
+        
+            .app-container {
+                flex-direction: column !important;
+                height: calc(100vh - 56px - 60px) !important; 
+            }
+            
+            .resizer {
+                display: none !important;
+            }
+            
+            .main-content {
+                flex: 1;
+                width: 100% !important;
+                padding: 8px 12px 12px;
+                overflow-y: auto;
+            }
+            
+            
+            #file-list-container {
+                height: calc(100vh - 220px) !important; 
+            }
+            
+            #file-list li {
+                padding: 14px 12px !important;
+                font-size: 1.05rem;
+            }
+            
+        
+            #mobile-upload-progress {
+                position: sticky;
+                top: 104px;
+                z-index: 1080;
+                background: #fff;
+                padding: 8px 12px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            }
+            
+            .mobile-bottom-nav {
+                display: flex !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 60px;
+                background: #fff;
+                border-top: 1px solid #ddd;
+                box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+                z-index: 1300;
+                align-items: center;
+                justify-content: space-around;
+                padding: 0 8px;
+            }
+            
+            .mobile-bottom-nav .nav-item {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.95rem;
+                padding: 4px 0;
+                min-height: 56px;
+            }
+            
+            .mobile-bottom-nav .nav-item i {
+                font-size: 1.4rem;
+                margin-bottom: 2px;
+            }
+            
+            #mobile-fab {
+                display: flex !important;
+                position: fixed;
+                bottom: 80px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: #4CAF50;
+                color: white;
+                box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+                z-index: 1250;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.8rem;
+            }
+            
+            .modal-overlay {
+                padding: 0 !important;
+            }
+            
+            .modal-content,
+            .share-modal-content,
+            .hidden-options-content {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                min-height: 100vh;
+                max-height: 100vh;
+                overflow-y: auto;
+            }
+            
+            #preview-container {
+                padding: 0;
+            }
+            
+            #preview-content {
+                width: 100% !important;
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            button, input[type="button"], input[type="submit"], .btn {
+                min-height: 48px;
+                font-size: 1.05rem;
+                padding: 12px 16px;
+            }
+            
+            h1, h2, h3 {
+                font-size: 1.25rem;
+            }
+            
+            #storage-info {
+                font-size: 1.05rem;
+                padding: 12px;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-header,
+            .mobile-breadcrumb,
+            .mobile-bottom-nav,
+            .mobile-fab {
+                display: none !important;
+            }
+            
+            .sidebar {
+                display: block !important;
+            }
+            
+            .app-container {
+                height: calc(100vh - 20px) !important;
+            }
+        }
+        
+        .drop-guide {
+            font-size: 1.1rem;
+            padding: 40px 20px;
+        }
+        
+        .progress-bar-outer,
+        .mobile-upload-bar-bg {
+            height: 12px;
+        }
+    </style>
 </head>
 <body>
 
