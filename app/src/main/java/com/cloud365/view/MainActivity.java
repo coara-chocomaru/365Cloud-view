@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.OpenableColumns;
-import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ClientCertRequest;
 import android.webkit.CookieManager;
@@ -62,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
     private ValueCallback<Uri[]> filePathCallback;
     private long lastBackPressTime = 0;
     private static final long DOUBLE_PRESS_INTERVAL = 500;
+
+    private Runnable autoRefreshRunnable;
+    private boolean isAutoRefreshRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
                 view.evaluateJavascript(jsViewport, null);
                 applyMobileOptimizations();
                 saveCookies();
-                view.evaluateJavascript("(function(){\nif(window._cloud365Injected) return;\nwindow._cloud365Injected = true;\nif(!window._cloud365ActiveUploads) window._cloud365ActiveUploads = {};\nfunction sendStorageInfoIfExists(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      var text = (typeof el.innerText !== 'undefined')? el.innerText : (el.textContent||'');\n      if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(text);\n      return true;\n    }\n    if (typeof getStorageInfo === 'function'){\n      try{\n        var val = getStorageInfo();\n        if(val && window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(String(val));\n        return true;\n      }catch(e){}\n    }\n  }catch(e){}\n  return false;\n}\nfunction observeStorage(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){}\n      var mo = new MutationObserver(function(){ try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){} });\n      mo.observe(el,{childList:true,characterData:true,subtree:true});\n      return;\n    }\n  }catch(e){}\n  var tries = 0;\n  var maxTries = 30;\n  var poll = setInterval(function(){\n    tries++;\n    if(sendStorageInfoIfExists() || tries>=maxTries) clearInterval(poll);\n  },1000);\n}\nfunction wrapXHR(){\n  try{\n    if(XMLHttpRequest.prototype._cloud365Wrapped) return;\n    XMLHttpRequest.prototype._cloud365Wrapped = true;\n    var origOpen = XMLHttpRequest.prototype.open;\n    var origSend = XMLHttpRequest.prototype.send;\n    XMLHttpRequest.prototype.open = function(method,url,async){\n      try{ this._cloudUrl = url; }catch(e){}\n      return origOpen.apply(this, arguments);\n    };\n    XMLHttpRequest.prototype.send = function(body){\n      try{\n        var filenames = [];\n        if(body instanceof FormData){\n          for(var pair of body.entries()){\n            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n          }\n        }\n        if(!filenames.length && body && body.name) filenames.push(body.name);\n        if(filenames.length){\n          var key = filenames[0];\n          var url = this._cloudUrl || '';\n          if(url.includes('/upload-files')){\n            if(window._cloud365ActiveUploads[key]){} else {\n              try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n              window._cloud365ActiveUploads[key] = true;\n            }\n            if(this.upload && typeof this.upload.addEventListener === 'function'){\n              this.upload.addEventListener('progress', function(e){\n                try{\n                  if(e.lengthComputable){\n                    var percent = Math.round((e.loaded/e.total)*100);\n                    try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadProgress) AndroidAppBridge.uploadProgress(key, percent); }catch(e){}\n                  }\n                }catch(e){}\n              });\n            }\n            this.addEventListener('load', function(){\n              try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n              try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n            });\n            this.addEventListener('error', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n            this.addEventListener('abort', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n          }\n        }\n      }catch(e){}\n      return origSend.apply(this, arguments);\n    };\n  }catch(e){}\n}\nfunction wrapFetch(){\n  try{\n    if(!window.fetch || window.fetch._cloud365Wrapped) return;\n    var origFetch = window.fetch;\n    window.fetch = function(input, init){\n      var filenames = [];\n      try{\n        if(init && init.body && init.body instanceof FormData){\n          for(var pair of init.body.entries()){\n            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n          }\n        }\n      }catch(e){}\n      if(filenames.length){\n        var key = filenames[0];\n        var url = (typeof input === 'string') ? input : (input && input.url ? input.url : '');\n        if(url.includes('/upload-files')){\n          if(!window._cloud365ActiveUploads[key]){\n            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n            window._cloud365ActiveUploads[key] = true;\n          }\n          return origFetch.apply(this, arguments).then(function(response){\n            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n            try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n            return response;\n          }).catch(function(err){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){}; throw err; });\n        } else {\n          return origFetch.apply(this, arguments);\n        }\n      } else {\n        return origFetch.apply(this, arguments);\n      }\n    };\n    window.fetch._cloud365Wrapped = true;\n  }catch(e){}\n}\nif(document.readyState==='complete' || document.readyState==='interactive'){\n  observeStorage();\n  wrapXHR();\n  wrapFetch();\n}else{\n  document.addEventListener('DOMContentLoaded', function(){\n    observeStorage();\n    wrapXHR();\n    wrapFetch();\n  });\n}\nvar deselectBtn=document.querySelector('.nav-item[data-target=\"files\"]');if(deselectBtn){deselectBtn.addEventListener('click',function(){try{var fileInput=document.getElementById('file-upload')||document.querySelector('input[type=\"file\"]');var hasFiles=fileInput&&fileInput.files&&fileInput.files.length>0;if(hasFiles){if(window.AndroidAppBridge&&AndroidAppBridge.fileDeselected)AndroidAppBridge.fileDeselected();}else{if(window.AndroidAppBridge&&AndroidAppBridge.fileNotSelected)AndroidAppBridge.fileNotSelected();}}catch(e){}},true);}})();", null);
+                view.evaluateJavascript("(function(){\nif(window._cloud365Injected) return;\nwindow._cloud365Injected = true;\nif(!window._cloud365ActiveUploads) window._cloud365ActiveUploads = {};\nfunction sendStorageInfoIfExists(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      var text = (typeof el.innerText !== 'undefined')? el.innerText : (el.textContent||'');\n      if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(text);\n      return true;\n    }\n    if (typeof getStorageInfo === 'function'){\n      try{\n        var val = getStorageInfo();\n        if(val && window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(String(val));\n        return true;\n      }catch(e){}\n    }\n  }catch(e){}\n  return false;\n}\nfunction observeStorage(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){}\n      var mo = new MutationObserver(function(){ try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){} });\n      mo.observe(el,{childList:true,characterData:true,subtree:true});\n      return;\n    }\n  }catch(e){}\n  var tries = 0;\n  var maxTries = 30;\n  var poll = setInterval(function(){\n    tries++;\n    if(sendStorageInfoIfExists() || tries>=maxTries) clearInterval(poll);\n  },1000);\n}\nfunction wrapXHR(){\n  try{\n    if(XMLHttpRequest.prototype._cloud365Wrapped) return;\n    XMLHttpRequest.prototype._cloud365Wrapped = true;\n    var origOpen = XMLHttpRequest.prototype.open;\n    var origSend = XMLHttpRequest.prototype.send;\n    XMLHttpRequest.prototype.open = function(method,url,async){\n      try{ this._cloudUrl = url; }catch(e){}\n      return origOpen.apply(this, arguments);\n    };\n    XMLHttpRequest.prototype.send = function(body){\n      try{\n        var filenames = [];\n        if(body instanceof FormData){\n          for(var pair of body.entries()){\n            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n          }\n        }\n        if(!filenames.length && body && body.name) filenames.push(body.name);\n        if(filenames.length){\n          var key = filenames[0];\n          var url = this._cloudUrl || '';\n          if(url.includes('/upload-files')){\n            if(window._cloud365ActiveUploads[key]){} else {\n              try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n              window._cloud365ActiveUploads[key] = true;\n            }\n            if(this.upload && typeof this.upload.addEventListener === 'function'){\n              this.upload.addEventListener('progress', function(e){\n                try{\n                  if(e.lengthComputable){\n                    var percent = Math.round((e.loaded/e.total)*100);\n                    try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadProgress) AndroidAppBridge.uploadProgress(key, percent); }catch(e){}\n                  }\n                }catch(e){}\n              });\n            }\n            this.addEventListener('load', function(){\n              try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n              try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n            });\n            this.addEventListener('error', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n            this.addEventListener('abort', function(){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){} });\n          }\n        }\n      }catch(e){}\n      return origSend.apply(this, arguments);\n    };\n  }catch(e){}\n}\nfunction wrapFetch(){\n  try{\n    if(!window.fetch || window.fetch._cloud365Wrapped) return;\n    var origFetch = window.fetch;\n    window.fetch = function(input, init){\n      var filenames = [];\n      try{\n        if(init && init.body && init.body instanceof FormData){\n          for(var pair of init.body.entries()){\n            try{ var val = pair[1]; if(val && val.name) filenames.push(val.name); }catch(e){}\n          }\n        }\n      }catch(e){}\n      if(filenames.length){\n        var key = filenames[0];\n        var url = (typeof input === 'string') ? input : (input && input.url ? input.url : '');\n        if(url.includes('/upload-files')){\n          if(!window._cloud365ActiveUploads[key]){\n            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadStarted) AndroidAppBridge.uploadStarted(JSON.stringify(filenames)); }catch(e){}\n            window._cloud365ActiveUploads[key] = true;\n          }\n          return origFetch.apply(this, arguments).then(function(response){\n            try{ if(window.AndroidAppBridge && AndroidAppBridge.uploadCompleted) AndroidAppBridge.uploadCompleted(key); }catch(e){}\n            try{ delete window._cloud365ActiveUploads[key]; }catch(e){}\n            return response;\n          }).catch(function(err){ try{ delete window._cloud365ActiveUploads[key]; }catch(e){}; throw err; });\n        } else {\n          return origFetch.apply(this, arguments);\n        }\n      } else {\n        return origFetch.apply(this, arguments);\n      }\n    };\n    window.fetch._cloud365Wrapped = true;\n  }catch(e){}\n}\nobserveStorage();\nwrapXHR();\nwrapFetch();\nvar deselectBtn=document.querySelector('.nav-item[data-target=\"files\"]');if(deselectBtn){deselectBtn.addEventListener('click',function(){try{var fileInput=document.getElementById('file-upload')||document.querySelector('input[type=\"file\"]');var hasFiles=fileInput&&fileInput.files&&fileInput.files.length>0;if(hasFiles){if(window.AndroidAppBridge&&AndroidAppBridge.fileDeselected)AndroidAppBridge.fileDeselected();}else{if(window.AndroidAppBridge&&AndroidAppBridge.fileNotSelected)AndroidAppBridge.fileNotSelected();}}catch(e){}},true);}})();", null);
 
                 view.evaluateJavascript("(function(){var e=document.getElementById('storage-info'); if(e) return e.innerText; if(typeof getStorageInfo === 'function') return getStorageInfo(); return null; })();", value -> {
                     if (value != null && !"null".equals(value)) {
@@ -156,12 +158,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
+                view.evaluateJavascript("(function(){try { var el = document.querySelector('label[for=\"file-upload\"]'); if (el && el.parentElement) { el.parentElement.style.display = 'none'; } } catch(e) {} })();", null);
+
                 if (url.contains("login.html") || url.contains("register.html")) {
                     redirectToLogin();
                     return;
                 }
 
-                enableAutoRefresh();
+                startAutoRefreshIfNeeded();
             }
 
             @Override
@@ -270,19 +274,63 @@ public class MainActivity extends AppCompatActivity {
         backPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (webView.canGoBack()) {
-                    webView.goBack();
-                } else {
-                    long currentTime = System.currentTimeMillis();
-                    if (currentTime - lastBackPressTime < DOUBLE_PRESS_INTERVAL) {
-                        finish();
-                    } else {
-                        lastBackPressTime = currentTime;
-                    }
-                }
+                handleBackPressed();
             }
         };
         getOnBackPressedDispatcher().addCallback(this, backPressedCallback);
+    }
+
+    private void handleBackPressed() {
+        if (webView.canGoBack()) {
+            webView.evaluateJavascript(
+                    "(function(){" +
+                            "  return (window._cloud365ActiveUploads && Object.keys(window._cloud365ActiveUploads).length > 0) ? 'uploading' : 'safe';" +
+                            "})();",
+                    value -> {
+                        if ("\"uploading\"".equals(value)) {
+                            Toast.makeText(MainActivity.this, "アップロード中です。完了してから戻ってください", Toast.LENGTH_SHORT).show();
+                        }
+                        webView.goBack();
+                    });
+        } else {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastBackPressTime < DOUBLE_PRESS_INTERVAL) {
+                finish();
+            } else {
+                lastBackPressTime = currentTime;
+                Toast.makeText(this, "もう一度押すと終了します", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void startAutoRefreshIfNeeded() {
+        if (autoRefreshRunnable == null) {
+            autoRefreshRunnable = () -> {
+                if (isFinishing() || webView == null || !isAutoRefreshRunning) return;
+                webView.evaluateJavascript("window.location.href", value -> {
+                    if (value != null && !"null".equals(value)) {
+                        String currentUrl = value.replace("\"", "");
+                        if (currentUrl.contains("index.html") && !currentUrl.contains("#")) {
+                            webView.reload();
+                        }
+                    }
+                });
+                if (isAutoRefreshRunning && !isFinishing()) {
+                    handler.postDelayed(autoRefreshRunnable, 30000);
+                }
+            };
+        }
+        if (!isAutoRefreshRunning) {
+            isAutoRefreshRunning = true;
+            handler.postDelayed(autoRefreshRunnable, 30000);
+        }
+    }
+
+    private void stopAutoRefresh() {
+        isAutoRefreshRunning = false;
+        if (handler != null && autoRefreshRunnable != null) {
+            handler.removeCallbacks(autoRefreshRunnable);
+        }
     }
 
     private InputStream getAssetStream(String name) {
@@ -340,12 +388,19 @@ public class MainActivity extends AppCompatActivity {
             if (idx == -1) return null;
             String extension = url.substring(idx + 1).toLowerCase(Locale.ROOT);
             switch (extension) {
-                case "jpg": case "jpeg": return "image/jpeg";
-                case "png": return "image/png";
-                case "pdf": return "application/pdf";
-                case "txt": return "text/plain";
-                case "mp4": return "video/mp4";
-                default: return null;
+                case "jpg":
+                case "jpeg":
+                    return "image/jpeg";
+                case "png":
+                    return "image/png";
+                case "pdf":
+                    return "application/pdf";
+                case "txt":
+                    return "text/plain";
+                case "mp4":
+                    return "video/mp4";
+                default:
+                    return null;
             }
         } catch (Exception e) {
             return null;
@@ -437,26 +492,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void applyMobileOptimizations() {
-        String mobileOptJs = "javascript:(function() { (function(win, doc){ try{ var meta=document.querySelector('meta[name=viewport]'); if(meta){ meta.content='width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'; } else { meta=document.createElement('meta'); meta.name='viewport'; meta.content='width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'; document.head.appendChild(meta); } if('ontouchstart' in window){ document.documentElement.style.webkitTouchCallout='none'; document.documentElement.style.webkitUserSelect='none'; } var preventDoubleTap = (function(){ var lastTouch=0; return function(e){ var now=Date.now(); if(now - lastTouch <= 300){ e.preventDefault(); } lastTouch = now; }; })(); doc.addEventListener('touchend', preventDoubleTap, {passive:false}); doc.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false}); var iosMeta = function(){ var ua=navigator.userAgent||''; if(/iP(hone|od|ad)/.test(ua)){ doc.documentElement.classList.add('is-ios'); } }; iosMeta(); } catch(err){} })(window, document); })()";
+        String mobileOptJs = "javascript:(function() { (function(win, doc){ try{ var meta=document.querySelector('meta[name=viewport]'); if(meta){ meta.content='width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'; } else { meta=document.createElement('meta'); meta.name='viewport'; meta.content='width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'; document.head.appendChild(meta); } var css = 'html,body{max-width:100%!important;overflow-x:hidden!important;box-sizing:border-box!important;}*{max-width:100%!important;box-sizing:border-box!important;}img,video,table,iframe{max-width:100%!important;height:auto!important;}.container,.content,.main,.wrapper{width:100%!important;} img[src*=\"365Cloud_Mainicon.png\"],img[src$=\"365Cloud_Mainicon.png\"]{display:none!important;visibility:hidden!important;width:0!important;height:0!important;margin:0!important;padding:0!important;border:none!important;opacity:0!important;}'; var style = doc.createElement('style'); style.innerHTML = css; doc.head.appendChild(style); if('ontouchstart' in window){ document.documentElement.style.webkitTouchCallout='none'; document.documentElement.style.webkitUserSelect='none'; } var preventDoubleTap = (function(){ var lastTouch=0; return function(e){ var now=Date.now(); if(now - lastTouch <= 300){ e.preventDefault(); } lastTouch = now; }; })(); doc.addEventListener('touchend', preventDoubleTap, {passive:false}); doc.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false}); var iosMeta = function(){ var ua=navigator.userAgent||''; if(/iP(hone|od|ad)/.test(ua)){ doc.documentElement.classList.add('is-ios'); } }; iosMeta(); } catch(err){} })(window, document); })()";
         webView.evaluateJavascript(mobileOptJs, null);
-    }
-
-    private void enableAutoRefresh() {
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isFinishing()) return;
-                webView.evaluateJavascript("window.location.href", value -> {
-                    if (value != null && !value.equals("null")) {
-                        String currentUrl = value.replace("\"", "");
-                        if (currentUrl.contains("index.html") && !currentUrl.contains("#")) {
-                            webView.reload();
-                        }
-                    }
-                });
-                handler.postDelayed(this, 5000);
-            }
-        }, 5000);
     }
 
     @Override
@@ -502,38 +539,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (webView.canGoBack()) {
-                webView.goBack();
-            } else {
-                long currentTime = System.currentTimeMillis();
-                if (currentTime - lastBackPressTime < DOUBLE_PRESS_INTERVAL) {
-                    finish();
-                } else {
-                    lastBackPressTime = currentTime;
-                }
-            }
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (backPressedCallback != null) {
-            backPressedCallback.setEnabled(false);
-        }
-        if (webView != null) {
-            webView.destroy();
-        }
-        handler.removeCallbacksAndMessages(null);
-        super.onDestroy();
-    }
-
-    @Override
     protected void onPause() {
         super.onPause();
+        stopAutoRefresh();
         if (webView != null) {
             webView.onPause();
             webView.pauseTimers();
@@ -552,8 +560,30 @@ public class MainActivity extends AppCompatActivity {
                 cookieManager.setCookie(BASE_URL, savedCookies);
                 cookieManager.flush();
             }
-            webView.reload();
         }
+        startAutoRefreshIfNeeded();
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopAutoRefresh();
+        if (backPressedCallback != null) {
+            backPressedCallback.setEnabled(false);
+            backPressedCallback = null;
+        }
+        if (webView != null) {
+            webView.stopLoading();
+            webView.setWebViewClient(null);
+            webView.setWebChromeClient(null);
+            webView.removeJavascriptInterface("AndroidAppBridge");
+            webView.clearHistory();
+            webView.clearCache(true);
+            webView.destroy();
+            webView = null;
+        }
+        handler.removeCallbacksAndMessages(null);
+        handler = null;
+        super.onDestroy();
     }
 
     private void sendBroadcastToService(Intent intent) {
@@ -576,11 +606,13 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void sendStorageInfo(String info) {
+            if (isFinishing()) return;
             broadcastStorageUpdate(info);
         }
 
         @JavascriptInterface
         public void uploadStarted(String filenamesJson) {
+            if (isFinishing()) return;
             handler.post(() -> {
                 try {
                     Toast.makeText(MainActivity.this, "アップロード開始", Toast.LENGTH_SHORT).show();
@@ -594,6 +626,7 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void uploadProgress(String key, int percent) {
+            if (isFinishing()) return;
             handler.post(() -> {
                 try {
                     progressBar.setProgress(percent);
@@ -608,6 +641,7 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void uploadCompleted(String key) {
+            if (isFinishing()) return;
             handler.post(() -> {
                 try {
                     Toast.makeText(MainActivity.this, "アップロード完了", Toast.LENGTH_SHORT).show();
@@ -621,6 +655,7 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void fileDeselected() {
+            if (isFinishing()) return;
             handler.post(() -> {
                 Toast.makeText(MainActivity.this, "ファイルが解除されました", Toast.LENGTH_SHORT).show();
             });
@@ -628,10 +663,10 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void fileNotSelected() {
+            if (isFinishing()) return;
             handler.post(() -> {
                 Toast.makeText(MainActivity.this, "ファイルは選択されていません", Toast.LENGTH_SHORT).show();
             });
         }
     }
 }
-
