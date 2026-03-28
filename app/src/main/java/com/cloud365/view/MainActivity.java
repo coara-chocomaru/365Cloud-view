@@ -35,10 +35,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -195,40 +192,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                try {
-                    String url = request.getUrl().toString();
-                    Uri uri = request.getUrl();
-                    String path = uri.getPath();
-                    if (path == null) return super.shouldInterceptRequest(view, request);
-                    if (path.endsWith("/indexhtml.js") || path.endsWith("/indexhtml.js/") || path.endsWith("/indexhtml.js?")) {
-                        InputStream is = getAssetStream("indexhtml.js");
-                        if (is != null) return new WebResourceResponse("application/javascript", "UTF-8", is);
-                    }
-                    if (path.endsWith("/index.html") || path.equals("/") || path.endsWith("/index")) {
-                        InputStream is = getAssetStream("index.html");
-                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
-                    }
-                } catch (Exception e) {
-                }
                 return super.shouldInterceptRequest(view, request);
             }
 
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-                try {
-                    Uri uri = Uri.parse(url);
-                    String path = uri.getPath();
-                    if (path == null) return super.shouldInterceptRequest(view, url);
-                    if (path.endsWith("/indexhtml.js")) {
-                        InputStream is = getAssetStream("indexhtml.js");
-                        if (is != null) return new WebResourceResponse("application/javascript", "UTF-8", is);
-                    }
-                    if (path.endsWith("/index.html") || path.equals("/") || path.endsWith("/index")) {
-                        InputStream is = getAssetStream("index.html");
-                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
-                    }
-                } catch (Exception e) {
-                }
                 return super.shouldInterceptRequest(view, url);
             }
         });
@@ -281,14 +249,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         getOnBackPressedDispatcher().addCallback(this, backPressedCallback);
-    }
-
-    private InputStream getAssetStream(String name) {
-        try {
-            return getAssets().open(name);
-        } catch (IOException e) {
-            return null;
-        }
     }
 
     private void startDownload(String url) {
@@ -352,28 +312,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadMainPage() {
         restoreCookies();
-        String html = readAssetFile("index.html");
-        if (html != null) {
-            webView.loadDataWithBaseURL(BASE_URL, html, "text/html", "UTF-8", null);
-        } else {
-            webView.loadUrl(BASE_URL + "index.html");
-        }
-    }
-
-    private String readAssetFile(String name) {
-        try {
-            InputStream is = getAssets().open(name);
-            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            br.close();
-            return sb.toString();
-        } catch (Exception e) {
-            return null;
-        }
+        webView.loadUrl(BASE_URL + "index.html");
     }
 
     private void restoreCookies() {
