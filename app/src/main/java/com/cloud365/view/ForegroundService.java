@@ -57,16 +57,7 @@ public class ForegroundService extends Service {
                 }
             } else if (ACTION_UPLOAD_STARTED.equals(action)) {
                 String files = intent.getStringExtra("files");
-                String fileKey = files != null ? files : ("upload_" + System.currentTimeMillis());
-                if (fileKey.startsWith("[")) {
-                    int idx = fileKey.indexOf('"');
-                    if (idx >= 0) {
-                        int idx2 = fileKey.indexOf('"', idx + 1);
-                        if (idx2 > idx) {
-                            fileKey = fileKey.substring(idx + 1, idx2);
-                        }
-                    }
-                }
+                String fileKey = extractFileKey(files);
                 if (uploadFileToNotifId.containsKey(fileKey)) {
                     Integer existingId = uploadFileToNotifId.get(fileKey);
                     updateProgressNotificationById(existingId, fileKey, 0);
@@ -98,9 +89,6 @@ public class ForegroundService extends Service {
                 if (notifId != null) {
                     completeProgressNotificationById(notifId, matchKey, true);
                     uploadFileToNotifId.remove(matchKey);
-                } else {
-                    int nid = createAndShowProgressNotification(matchKey, true);
-                    completeProgressNotificationById(nid, matchKey, true);
                 }
             } else if (ACTION_STOP_FOREGROUND.equals(action)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -222,6 +210,21 @@ public class ForegroundService extends Service {
             if (k != null && k.contains(shortName)) return k;
         }
         return null;
+    }
+
+    private String extractFileKey(String filesJson) {
+        if (filesJson == null) return "upload_" + System.currentTimeMillis();
+        String key = filesJson.trim();
+        if (key.startsWith("[")) {
+            int start = key.indexOf('"');
+            if (start >= 0) {
+                int end = key.indexOf('"', start + 1);
+                if (end > start) {
+                    key = key.substring(start + 1, end);
+                }
+            }
+        }
+        return key.isEmpty() ? "upload_" + System.currentTimeMillis() : key;
     }
 
     private void scheduleStaleTimeout(int notifId, String key, boolean isUpload) {
