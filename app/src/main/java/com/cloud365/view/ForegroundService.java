@@ -126,8 +126,9 @@ public class ForegroundService extends Service {
                     completeProgressNotificationById(nid, matchKey);
                 }
 
-                recentlyCompleted.add(matchKey);
-                handler.postDelayed(() -> recentlyCompleted.remove(matchKey), RECENTLY_COMPLETED_BLOCK_MS);
+                String finalMatchKey = matchKey;
+                recentlyCompleted.add(finalMatchKey);
+                handler.postDelayed(() -> recentlyCompleted.remove(finalMatchKey), RECENTLY_COMPLETED_BLOCK_MS);
 
                 uploadPercent = -1;
                 lastUpload = matchKey != null ? matchKey : "";
