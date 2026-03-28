@@ -45,6 +45,7 @@
 
         <service
             android:name=".ForegroundService"
+            android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="connectedDevice|dataSync|mediaPlayback" />
         
