@@ -377,7 +377,6 @@
         </div>
     </div>
 
-    <!-- Edit Share Modal -->
     <div id="edit-share-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="close-edit-modal-button">×</span>
@@ -425,28 +424,27 @@
     <script src="share-management.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            function updateCopyButtons() {
-                document.querySelectorAll('.operation-buttons button').forEach(function(btn) {
-                    if (btn.textContent.trim() === 'リンクを開く') {
-                        btn.textContent = 'リンクをコピー';
-                        btn.addEventListener('click', function(e) {
-                            const row = this.closest('tr');
-                            if (!row) return;
-                            const linkElement = row.querySelector('.link-cell a');
-                            if (linkElement && linkElement.href) {
-                                navigator.clipboard.writeText(linkElement.href).then(function() {
-                                    const modal = document.getElementById('message-modal');
-                                    document.getElementById('message-modal-title').textContent = '成功';
-                                    document.getElementById('message-modal-text').textContent = 'リンクをコピーしました';
-                                    modal.style.display = 'flex';
-                                });
-                            }
+            function updateCopyLinks() {
+                document.querySelectorAll('td[data-label="リンク"] a').forEach(function(link) {
+                    if (link.textContent.trim() === 'リンクを開く') {
+                        const url = link.href;
+                        link.textContent = 'リンクをコピー';
+                        link.removeAttribute('target');
+                        link.style.cursor = 'pointer';
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            navigator.clipboard.writeText(url).then(function() {
+                                const modal = document.getElementById('message-modal');
+                                document.getElementById('message-modal-title').textContent = '成功';
+                                document.getElementById('message-modal-text').textContent = 'リンクをコピーしました';
+                                modal.style.display = 'flex';
+                            });
                         });
                     }
                 });
             }
-            updateCopyButtons();
-            const observer = new MutationObserver(updateCopyButtons);
+            updateCopyLinks();
+            const observer = new MutationObserver(updateCopyLinks);
             observer.observe(document.getElementById('share-list-body'), { childList: true, subtree: true });
         });
     </script>
