@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ユーザー設定 - 365Cloud</title>
     <link rel="stylesheet" href="365Cloud.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -12,364 +12,349 @@
             --card-shadow: 0 4px 15px rgba(0,0,0,0.1);
             --card-border-color: var(--border-color-secondary);
             --input-bg-color: var(--bg-color-main);
+            --nav-bg-color: var(--bg-color-sidebar);
+            --nav-link-hover-bg: var(--bg-color-action-section);
+            --nav-link-active-bg: var(--accent-color);
         }
-
         body.dark-mode {
+            --bg-color-body: #0f172a;
             --card-bg-color: var(--bg-color-action-section);
             --card-shadow: 0 4px 20px rgba(0,0,0,0.3);
             --card-border-color: #444;
             --input-bg-color: var(--bg-color-file-item);
+            --nav-bg-color: #1e293b;
+            --nav-link-hover-bg: #2a2f3b;
+            --nav-link-active-bg: var(--accent-color-dark-theme);
         }
-
         body {
             min-height: 100vh;
-            margin: 0;
+            height: auto;
             padding: 0;
             background-color: var(--bg-color-body);
             color: var(--text-color-primary);
-            font-family: 'Poppins', sans-serif;
-            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
         }
-
         .settings-header {
-            padding: 16px 20px;
+            padding: 15px 20px;
             background-color: var(--nav-bg-color);
             border-bottom: 1px solid var(--card-border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
-
         .settings-header h1 {
-            font-size: 1.5em;
+            font-size: 1.6em;
             margin: 0;
         }
-
         .settings-nav {
             background-color: var(--nav-bg-color);
-            padding: 12px 20px;
             border-bottom: 1px solid var(--card-border-color);
+            padding: 8px 0;
+        }
+        .settings-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
             display: flex;
-            gap: 8px;
+            flex-direction: row;
             overflow-x: auto;
-            white-space: nowrap;
-            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
         }
-
-        .settings-nav::-webkit-scrollbar {
-            display: none;
+        .settings-nav li {
+            flex: 1 0 auto;
+            min-width: 70px;
         }
-
-        .settings-nav a {
+        .settings-nav li a {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
+            gap: 4px;
+            padding: 10px 8px;
             color: var(--text-color-primary);
             text-decoration: none;
-            border-radius: 8px;
             font-weight: 500;
-            flex-shrink: 0;
-            transition: all 0.2s;
+            font-size: 0.85em;
+            transition: background-color 0.2s, color 0.2s;
         }
-
-        .settings-nav a:hover {
+        .settings-nav li a .fa-fw {
+            width: 24px;
+            font-size: 1.45em;
+        }
+        .settings-nav li a:hover {
             background-color: var(--nav-link-hover-bg);
         }
-
-        .settings-nav a.active {
-            background-color: var(--button-bg-primary);
+        .settings-nav li a.active {
+            background-color: var(--nav-link-active-bg);
             color: white;
         }
-
         .settings-content {
-            padding: 20px;
+            padding: 20px 15px;
         }
-
         .settings-section {
             display: none;
         }
-
         .settings-section.active {
             display: block;
-            animation: fadeIn 0.4s ease;
+            animation: fadeIn 0.5s ease-in-out;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
+        .section-description {
+            margin-top: -10px;
+            margin-bottom: 25px;
+            color: var(--text-color-secondary);
+        }
         .card {
             background-color: var(--card-bg-color);
             padding: 20px;
             border-radius: 12px;
             box-shadow: var(--card-shadow);
-            margin-bottom: 24px;
+            margin-bottom: 25px;
             border: 1px solid var(--card-border-color);
+            transition: background-color 0.3s, border-color 0.3s;
         }
-
         .card h2 {
-            margin: 0 0 20px 0;
-            font-size: 1.4em;
             color: var(--text-color-heading);
+            border-bottom: 1px solid var(--border-color-secondary);
+            padding-bottom: 15px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.45em;
         }
-
-        .section-description {
-            color: var(--text-color-secondary);
-            margin-bottom: 24px;
-            font-size: 0.95em;
-        }
-
         .form-group {
             margin-bottom: 20px;
         }
-
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: var(--text-color-secondary);
         }
-
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], input[type="file"] {
             width: 100%;
-            padding: 12px;
-            border-radius: 8px;
             background-color: var(--input-bg-color);
-            border: 1px solid var(--border-color-primary);
             color: var(--text-color-primary);
-            font-size: 1em;
+            border: 1px solid var(--border-color-primary);
         }
-
-        .username-form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        #message {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
         }
-
+        #message.success {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--text-color-message-success);
+            display: block;
+        }
+        #message.error {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--text-color-message-error);
+            display: block;
+        }
         .avatar-preview-container {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 16px;
-            margin: 20px 0;
+            gap: 20px;
+            flex-wrap: wrap;
         }
-
         #avatar-preview {
-            width: 90px;
-            height: 90px;
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid var(--border-color-primary);
         }
-
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .status-indicator.enabled {
+            background-color: rgba(40, 167, 69, 0.3);
+            color: #20c997;
+        }
+        .status-indicator.disabled {
+            background-color: rgba(108, 117, 125, 0.3);
+            color: #adb5bd;
+        }
         .history-table-container {
             max-height: 380px;
             overflow-y: auto;
             border: 1px solid var(--border-color-primary);
             border-radius: 8px;
         }
-
         .history-table {
             width: 100%;
             border-collapse: collapse;
         }
-
         .history-table th, .history-table td {
-            padding: 12px 14px;
+            padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid var(--border-color-primary);
-            font-size: 0.95em;
         }
-
         .history-table th {
             background-color: var(--input-bg-color);
             position: sticky;
             top: 0;
-            z-index: 10;
         }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 200;
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+        .username-form-group {
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            justify-content: center;
+            gap: 10px;
         }
-
-        .modal-content {
-            background-color: var(--card-bg-color);
-            width: 90%;
-            max-width: 420px;
-            border-radius: 12px;
-            padding: 24px;
+        .username-form-group label {
+            flex-shrink: 0;
+            margin-bottom: 0;
         }
-
-        .close-button {
-            float: right;
-            font-size: 28px;
-            cursor: pointer;
+        .username-form-group input {
+            flex-grow: 1;
+            min-width: 200px;
         }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1em;
-            margin-top: 8px;
+        .username-form-group button {
+            flex-shrink: 0;
         }
     </style>
     <link rel="icon" type="image/png" href="/365Cloud/365Cloud_Mainicon.png">
     <link rel="apple-touch-icon" href="/365Cloud/365Cloud_Mainicon.png">
+    <link rel="shortcut icon" href="/365Cloud/365Cloud_Mainicon.png">
 </head>
 <body>
-
-    <div class="settings-header">
-        <h1>ユーザー設定</h1>
-        <a href="/365Cloud/index.html" class="btn btn-secondary">戻る</a>
-    </div>
-
-    <div id="message"></div>
-
-    <nav class="settings-nav">
-        <a href="#profile" class="active"><i class="fas fa-user-circle fa-fw"></i> プロフィール</a>
-        <a href="#security"><i class="fas fa-shield-alt fa-fw"></i> セキュリティ</a>
-        <a href="#login-history"><i class="fas fa-history fa-fw"></i> ログイン履歴</a>
-        <a href="#appearance"><i class="fas fa-palette fa-fw"></i> 表示設定</a>
-    </nav>
-
-    <main class="settings-content">
-        <section id="profile" class="settings-section active">
-            <h2>プロフィール設定</h2>
-            <p class="section-description">あなたの公開プロフィール情報とアバターを管理します。</p>
-            <div class="card">
-                <div class="form-group username-form-group">
-                    <label for="username-input">ユーザー名</label>
-                    <input type="text" id="username-input" value="" maxlength="10">
-                    <button id="save-username-button" class="btn btn-primary">変更を保存</button>
-                </div>
-                <div class="form-group avatar-preview-container">
-                    <img id="avatar-preview" src="/365Cloud/api/user/avatar" alt="Current Avatar">
-                    <div style="text-align:center; width:100%;">
-                        <label for="avatar-upload">アイコン画像を変更</label>
-                        <input type="file" id="avatar-upload" accept="image/png, image/jpeg, image/gif">
-                        <button id="upload-avatar-button" class="btn btn-primary">アップロード</button>
-                    </div>
+<div class="settings-header">
+    <h1>ユーザー設定</h1>
+    <a href="/365Cloud/index.html" class="btn btn-secondary">ファイル管理に戻る</a>
+</div>
+<div id="message"></div>
+<nav class="settings-nav">
+    <ul>
+        <li><a href="#profile" class="active"><i class="fas fa-user-circle fa-fw"></i> プロフィール</a></li>
+        <li><a href="#security"><i class="fas fa-shield-alt fa-fw"></i> セキュリティ</a></li>
+        <li><a href="#login-history"><i class="fas fa-history fa-fw"></i> ログイン履歴</a></li>
+        <li><a href="#appearance"><i class="fas fa-palette fa-fw"></i> 表示設定</a></li>
+    </ul>
+</nav>
+<main class="settings-content">
+    <section id="profile" class="settings-section active">
+        <h2>プロフィール設定</h2>
+        <p class="section-description">あなたの公開プロフィール情報とアバターを管理します。</p>
+        <div class="card">
+            <div class="form-group username-form-group">
+                <label for="username-input">ユーザー名</label>
+                <input type="text" id="username-input" value="" maxlength="10">
+                <button id="save-username-button" class="btn btn-primary">変更を保存</button>
+            </div>
+            <div class="form-group avatar-preview-container">
+                <img id="avatar-preview" src="/365Cloud/api/user/avatar" alt="Current Avatar" width="80" height="80">
+                <div>
+                    <label for="avatar-upload">アイコン画像を変更</label>
+                    <input type="file" id="avatar-upload" accept="image/png, image/jpeg, image/gif">
+                    <button id="upload-avatar-button">アップロード</button>
                 </div>
             </div>
-        </section>
-
-        <section id="security" class="settings-section">
-            <h2>セキュリティ設定</h2>
-            <p class="section-description">パスワードの変更と二要素認証でアカウントを保護します。</p>
-            <div class="card">
-                <div class="form-group">
-                    <label>パスワード</label>
-                    <button id="open-password-modal" class="btn btn-primary">パスワードを変更</button>
-                </div>
-                <div class="form-group">
-                    <label>二要素認証 (2FA)</label>
-                    <p style="margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+        </div>
+    </section>
+    <section id="security" class="settings-section">
+        <h2>セキュリティ設定</h2>
+        <p class="section-description">パスワードの変更と二要素認証（2FA）でアカウントを保護します。</p>
+        <div class="card">
+            <div class="form-group">
+                <label>パスワード</label>
+                <button id="open-password-modal">パスワードを変更</button>
+            </div>
+            <div class="form-group form-group-divider">
+                <label>二要素認証 (2FA)</label>
+                <div>
+                    <p style="margin: 0; display: flex; align-items: center; gap: 10px;">
                         ステータス: <span id="2fa-status"></span>
                         <button id="toggle-2fa-button" class="btn-secondary"></button>
                     </p>
                 </div>
             </div>
-        </section>
-
-        <section id="login-history" class="settings-section">
-            <h2>ログイン履歴</h2>
-            <p class="section-description">あなたのアカウントへの最近のログインアクティビティを確認します。</p>
-            <div class="card">
-                <div id="login-history-container" class="history-table-container">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>日時</th>
-                                <th>IPアドレス</th>
-                            </tr>
-                        </thead>
-                        <tbody id="login-history-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <section id="appearance" class="settings-section">
-            <h2>表示設定</h2>
-            <p class="section-description">サイトの見た目をカスタマイズします。</p>
-            <div class="card">
-                <div class="form-group">
-                    <label>テーマ</label>
-                    <button id="dark-mode-toggle" class="btn btn-primary">ライトモードに切り替え</button>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Password Change Modal -->
-    <div id="password-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="close-password-modal">&times;</span>
-            <h2>パスワード変更</h2>
-            <form id="password-change-form">
-                <div class="form-group">
-                    <label for="current-password">現在のパスワード</label>
-                    <input type="password" id="current-password" required>
-                </div>
-                <div class="form-group">
-                    <label for="new-password">新しいパスワード (8文字以上)</label>
-                    <input type="password" id="new-password" required minlength="8">
-                </div>
-                <div class="form-group">
-                    <label for="confirm-password">新しいパスワード（確認）</label>
-                    <input type="password" id="confirm-password" required minlength="8">
-                </div>
-                <button type="submit" class="btn btn-primary">変更を保存</button>
-            </form>
         </div>
+    </section>
+    <section id="login-history" class="settings-section">
+        <h2>ログイン履歴</h2>
+        <p class="section-description">あなたのアカウントへの最近のログインアクティビティを確認します。</p>
+        <div class="card">
+            <div id="login-history-container" class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>日時</th>
+                            <th>IPアドレス</th>
+                        </tr>
+                    </thead>
+                    <tbody id="login-history-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    <section id="appearance" class="settings-section">
+        <h2>表示設定</h2>
+        <p class="section-description">サイトの見た目をカスタマイズします。</p>
+        <div class="card">
+            <div class="form-group">
+                <label>テーマ</label>
+                <button id="dark-mode-toggle">ライトモードに切り替え</button>
+            </div>
+        </div>
+    </section>
+</main>
+<div id="password-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" id="close-password-modal">&times;</span>
+        <h2>パスワード変更</h2>
+        <form id="password-change-form">
+            <div class="form-group">
+                <label for="current-password">現在のパスワード</label>
+                <input type="password" id="current-password" required>
+            </div>
+            <div class="form-group">
+                <label for="new-password">新しいパスワード (8文字以上)</label>
+                <input type="password" id="new-password" required minlength="8">
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">新しいパスワード（確認）</label>
+                <input type="password" id="confirm-password" required minlength="8">
+            </div>
+            <button type="submit">変更を保存</button>
+        </form>
     </div>
-
-    <script src="settings.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const navLinks = document.querySelectorAll('.settings-nav a');
-            const sections = document.querySelectorAll('.settings-section');
-
-            const activateSection = (hash) => {
-                const targetHash = hash || '#profile';
-                
-                navLinks.forEach(link => {
-                    link.classList.toggle('active', link.hash === targetHash);
-                });
-
-                sections.forEach(section => {
-                    section.classList.toggle('active', section.id === targetHash.substring(1));
-                });
-            };
-
+</div>
+<script src="settings.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const navLinks = document.querySelectorAll('.settings-nav ul a');
+        const sections = document.querySelectorAll('.settings-section');
+        const activateSection = (hash) => {
+            const targetHash = hash || '#profile';
             navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.location.hash = link.hash;
-                });
+                link.classList.toggle('active', link.hash === targetHash);
             });
-
-            window.addEventListener('hashchange', () => {
-                activateSection(window.location.hash);
+            sections.forEach(section => {
+                section.classList.toggle('active', section.id === targetHash.substring(1));
             });
-
+        };
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.hash = link.hash;
+            });
+        });
+        window.addEventListener('hashchange', () => {
             activateSection(window.location.hash);
         });
-    </script>
+        activateSection(window.location.hash);
+    });
+</script>
 </body>
 </html>
