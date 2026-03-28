@@ -33,7 +33,7 @@ public class ForegroundService extends Service {
     private static final int NOTIFICATION_ID = 4201;
     private static final String CHANNEL_ID = "cloud365_service_channel";
     private static final String CHANNEL_NAME = "365Cloud Service";
-    private static final String PROGRESS_CHANNEL_PREFIX = "cloud365_progress_channel_";
+    private static final String PROGRESS_CHANNEL_ID = "cloud365_upload_progress";
 
     private String storageInfo = "使用容量: -- / --";
     private String lastUpload = "";
@@ -43,7 +43,6 @@ public class ForegroundService extends Service {
     private final Map<String, Integer> uploadFileToNotifId = new HashMap<>();
     private final Map<Integer, Runnable> notifIdToTimeout = new HashMap<>();
     private final AtomicInteger nextNotifId = new AtomicInteger(5000);
-    private final Map<Integer, String> notifIdToChannel = new HashMap<>();
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private static final long STALE_TIMEOUT_MS = 120000;
@@ -72,11 +71,11 @@ public class ForegroundService extends Service {
                     }
                 }
 
-                int notifId = createAndShowProgressNotification(fileKey, true);
+                int notifId = createAndShowProgressNotification(fileKey);
                 uploadFileToNotifId.put(fileKey, notifId);
                 uploadPercent = 0;
                 lastUpload = fileKey;
-                scheduleStaleTimeout(notifId, fileKey, true);
+                scheduleStaleTimeout(notifId, fileKey);
 
             } else if (ACTION_UPLOAD_PROGRESS.equals(action)) {
                 String key = intent.getStringExtra("key");
@@ -87,9 +86,9 @@ public class ForegroundService extends Service {
 
                 Integer notifId = uploadFileToNotifId.get(matchKey);
                 if (notifId == null) {
-                    notifId = createAndShowProgressNotification(matchKey, true);
+                    notifId = createAndShowProgressNotification(matchKey);
                     uploadFileToNotifId.put(matchKey, notifId);
-                    scheduleStaleTimeout(notifId, matchKey, true);
+                    scheduleStaleTimeout(notifId, matchKey);
                 } else {
                     refreshStaleTimeout(notifId);
                 }
@@ -106,11 +105,11 @@ public class ForegroundService extends Service {
 
                 Integer notifId = uploadFileToNotifId.get(matchKey);
                 if (notifId != null) {
-                    completeProgressNotificationById(notifId, matchKey, true);
+                    completeProgressNotificationById(notifId, matchKey);
                     uploadFileToNotifId.remove(matchKey);
                 } else {
-                    int nid = createAndShowProgressNotification(matchKey, true);
-                    completeProgressNotificationById(nid, matchKey, true);
+                    int nid = createAndShowProgressNotification(matchKey);
+                    completeProgressNotificationById(nid, matchKey);
                 }
 
                 uploadPercent = -1;
@@ -131,6 +130,7 @@ public class ForegroundService extends Service {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
+        createProgressChannel();
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_STORAGE_UPDATE);
@@ -156,14 +156,14 @@ public class ForegroundService extends Service {
         }
     }
 
-    private void createProgressChannel(String channelId, String channelName) {
+    private void createProgressChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = getSystemService(NotificationManager.class);
             if (nm == null) return;
 
             NotificationChannel channel = new NotificationChannel(
-                    channelId,
-                    channelName,
+                    PROGRESS_CHANNEL_ID,
+                    "アップロード進行状況",
                     NotificationManager.IMPORTANCE_DEFAULT
             );
             channel.setDescription("進行状況通知");
@@ -173,27 +173,21 @@ public class ForegroundService extends Service {
         }
     }
 
-    private int createAndShowProgressNotification(String fileNameRaw, boolean isUpload) {
-        String fileKey = fileNameRaw != null ? fileNameRaw : "unknown_" + System.currentTimeMillis();
-        String channelId = PROGRESS_CHANNEL_PREFIX + Math.abs(fileKey.hashCode()) + "_" + System.currentTimeMillis();
-
-        createProgressChannel(channelId, isUpload ? "アップロード進行状況" : "進行状況");
-
+    private int createAndShowProgressNotification(String fileKey) {
+        String displayName = fileKey != null ? fileKey : "unknown";
         int notifId = nextNotifId.getAndIncrement();
-        notifIdToChannel.put(notifId, channelId);
 
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent;
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             pendingIntent = PendingIntent.getActivity(this, notifId, intent, PendingIntent.FLAG_IMMUTABLE);
         } else {
             pendingIntent = PendingIntent.getActivity(this, notifId, intent, 0);
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                .setContentTitle(isUpload ? "アップロード中" : "進行中")
-                .setContentText(fileKey)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, PROGRESS_CHANNEL_ID)
+                .setContentTitle("アップロード中")
+                .setContentText(displayName)
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setContentIntent(pendingIntent)
                 .setOnlyAlertOnce(true)
@@ -208,11 +202,7 @@ public class ForegroundService extends Service {
     }
 
     private void updateProgressNotificationById(int notifId, String fileKey, int percent) {
-        String channelId = notifIdToChannel.containsKey(notifId)
-                ? notifIdToChannel.get(notifId)
-                : CHANNEL_ID;
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, PROGRESS_CHANNEL_ID)
                 .setContentTitle("アップロード中")
                 .setContentText(fileKey)
                 .setSmallIcon(android.R.drawable.stat_sys_download)
@@ -230,22 +220,16 @@ public class ForegroundService extends Service {
         if (nm != null) nm.notify(notifId, builder.build());
     }
 
-    private void completeProgressNotificationById(int notifId, String fileKey, boolean isUpload) {
-        String channelId = notifIdToChannel.containsKey(notifId)
-                ? notifIdToChannel.get(notifId)
-                : CHANNEL_ID;
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                .setContentTitle(isUpload ? "アップロード完了" : "完了")
+    private void completeProgressNotificationById(int notifId, String fileKey) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, PROGRESS_CHANNEL_ID)
+                .setContentTitle("アップロード完了")
                 .setContentText(fileKey)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
                 .setOngoing(false)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(
-                        (isUpload ? "アップロードが完了しました: " : "完了: ") + fileKey
-                ));
+                .setStyle(new NotificationCompat.BigTextStyle().bigText("アップロードが完了しました: " + fileKey));
 
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) nm.notify(notifId, builder.build());
@@ -263,7 +247,7 @@ public class ForegroundService extends Service {
         return null;
     }
 
-    private void scheduleStaleTimeout(int notifId, String key, boolean isUpload) {
+    private void scheduleStaleTimeout(int notifId, String key) {
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -273,16 +257,14 @@ public class ForegroundService extends Service {
 
                     notifIdToTimeout.remove(notifId);
 
-                    if (isUpload) {
-                        String removeKey = null;
-                        for (Map.Entry<String, Integer> e : uploadFileToNotifId.entrySet()) {
-                            if (e.getValue().equals(notifId)) {
-                                removeKey = e.getKey();
-                                break;
-                            }
+                    String removeKey = null;
+                    for (Map.Entry<String, Integer> e : uploadFileToNotifId.entrySet()) {
+                        if (e.getValue().equals(notifId)) {
+                            removeKey = e.getKey();
+                            break;
                         }
-                        if (removeKey != null) uploadFileToNotifId.remove(removeKey);
                     }
+                    if (removeKey != null) uploadFileToNotifId.remove(removeKey);
                 } catch (Exception e) {
                 }
             }
