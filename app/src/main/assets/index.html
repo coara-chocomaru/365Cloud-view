@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>365Cloud</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="365Cloud.css">
+    <link rel="icon" type="image/png" href="/365Cloud/365Cloud_Mainicon.png">
+    <link rel="apple-touch-icon" href="/365Cloud/365Cloud_Mainicon.png">
+    <link rel="shortcut icon" href="/365Cloud/365Cloud_Mainicon.png">
+</head>
+<body>
+
+<div class="mobile-header">
+    <button id="mobile-menu-toggle" class="mobile-icon-btn"><i class="fas fa-bars"></i></button>
+    <div class="mobile-app-title">365Cloud</div>
+    <div class="mobile-header-actions">
+        <button id="mobile-new-folder-btn" class="mobile-icon-btn" title="新規フォルダ"><i class="fas fa-folder-plus"></i></button>
+    </div>
+</div>
+
+<div class="mobile-breadcrumb" id="mobile-breadcrumb">
+    <button id="mobile-back-btn" class="mobile-back-icon-btn"><i class="fas fa-chevron-left"></i></button>
+    <span id="mobile-path-display">ホーム</span>
+</div>
+
+<div id="mobile-upload-progress">
+    <div class="mobile-upload-bar-bg">
+        <div class="mobile-upload-bar-fill" id="mobile-upload-bar-fill"></div>
+    </div>
+    <span id="mobile-upload-text">0%</span>
+</div>
+
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+<div class="cloud"></div>
+
+<div class="app-container">
+
+    <div class="sidebar">
+        <h1><img src="/365Cloud/365Cloud_Mainicon.png" alt="365Cloud" style="height: 1.5em; vertical-align: middle; margin-right: 0.2em;">365Cloud</h1>
+
+        <div id="user-profile" class="action-section">
+            <img id="user-avatar" src="" alt="User Avatar" width="64" height="64" style="border-radius: 50%; margin-bottom: 10px;">
+            <h3 id="welcome-message" style="margin-top: 0;"></h3>
+            <div id="discord-status"></div>
+            <div class="user-actions-container">
+                <a href="/365Cloud/settings.html" class="btn btn-settings">設定の変更</a>
+                <a href="/365Cloud/share-management.html" class="btn btn-share-management">共有管理</a>
+            </div>
+            <a href="/365Cloud/auth/discord" id="link-discord-button" style="display: none; margin-top: 10px; padding: 8px 12px; background-color: #5865F2; color: white; text-decoration: none; border-radius: 5px;">Discordアカウントを連携</a>
+        </div>
+
+        <button id="dark-mode-toggle">ダークモード切替</button>
+        <div id="storage-info"></div>
+
+        <h2>ファイル操作</h2>
+        <div class="action-section">
+            <div>
+                <label for="file-upload">ファイルを選択:</label>
+                <input type="file" id="file-upload" multiple>
+                <button id="upload-button">アップロード</button>
+                <div id="progress-container" style="width: 100%; background-color: #f3f3f3; border-radius: 5px; margin-top: 10px; display: none;">
+                    <div id="progress-bar" style="width: 0%; height: 20px; background-color: #4CAF50; border-radius: 5px; text-align: center; color: white;">0%</div>
+                </div>
+                <button id="clear-file-button">選択解除</button>
+            </div>
+            <div id="upload-progress"></div>
+            <div id="global-upload-progress-container" style="display: none;">
+                <div class="progress-bar-outer">
+                    <div id="global-upload-progress-bar" class="progress-bar-inner">
+                        <span id="global-upload-progress-text">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                 <label for="folder-name">新しいフォルダー:</label>
+                <input type="text" id="folder-name" placeholder="フォルダー名を入力">
+                <button id="create-folder-button">作成</button>
+            </div>
+
+            <div>
+                 <button id="logout-button">ログアウト</button>
+            </div>
+        </div>
+
+        <h2>ナビゲーション</h2>
+        <div class="action-section">
+            <button id="back-button">戻る</button>
+             <div id="current-folder-display"></div>
+        </div>
+    </div>
+
+    <div class="resizer"></div>
+
+    <div class="main-content">
+         <div class="file-list-header">
+             <div id="current-folder-display-main"></div>
+         </div>
+
+
+        <div id="file-list-container">
+            <ul id="file-list">
+            </ul>
+            <div class="drop-guide" style="display: none;">ここにファイルをドラッグ＆ドロップ</div>
+        </div>
+         <div id="message"></div>
+    </div>
+</div>
+
+
+<div id="preview-container">
+    <div id="preview-content">
+        <div id="preview-data"></div>
+        <button id="preview-close-button">閉じる</button>
+    </div>
+</div>
+
+<div id="share-modal" class="modal-overlay" style="display: none;">
+    <div class="share-modal-content modal-content">
+        <span class="close-button" id="close-share-modal-button">×</span>
+        <h3>共有リンク</h3>
+        <input type="text" id="share-link-input" value="" readonly>
+        <div class="share-modal-buttons">
+            <button id="copy-share-link-button">リンクをコピー</button>
+        </div>
+    </div>
+</div>
+
+<div id="hidden-options-modal" class="modal-overlay" style="display: none;">
+    <div class="hidden-options-content modal-content">
+        <span class="close-button" id="close-hidden-options-modal">×</span>
+        <h3>System information</h3>
+        <div id="system-info">
+            <p><strong>365Cloud Version:</strong> <span id="app-version">365Cloud-Version_v3.1</span></p>
+            <p><strong>OS:</strong> <span id="os-info">Linux</span></p>
+            <p><strong>TotalStorage:</strong> <span id="storage-total">500GB</span></p>
+            <p><strong>CPU:</strong> <span id="cpu-info">Core i5-2450M</span></p>
+            <p><strong>Memory:</strong> <span id="memory-info">8GB</span></p>
+        </div>
+    </div>
+</div>
+
+
+<div id="share-options-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <span class="close-button">×</span>
+        <h2>ファイル共有オプション</h2>
+        <p class="share-file-name"></p>
+
+        <div class="share-protection-options">
+            <div class="option-row">
+                <input type="radio" id="protect-none" name="protection" value="none" checked>
+                <label for="protect-none">保護なし (リンクを知っている全員がアクセス可能)</label>
+            </div>
+
+            <div class="option-row">
+                <input type="radio" id="protect-pin" name="protection" value="pin">
+                <label for="protect-pin">PINコードで保護</label>
+            </div>
+            <div id="pin-input-container" class="input-container" style="display: none;">
+                <input type="text" id="share-pin-input" placeholder="4〜6桁の数字" maxlength="6">
+            </div>
+
+            <div class="option-row">
+                <input type="radio" id="protect-password" name="protection" value="password">
+                <label for="protect-password">パスワードで保護</label>
+            </div>
+            <div id="password-input-container" class="input-container" style="display: none;">
+                <input type="password" id="share-password-input" placeholder="8文字以上">
+            </div>
+        </div>
+        
+        <p class="modal-error-message"></p>
+
+        <button id="create-share-link-button">共有リンクを作成</button>
+    </div>
+</div>
+
+<div id="message-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <span class="close-button" id="close-message-modal-button">×</span>
+        <h3 id="message-modal-title">お知らせ</h3>
+        <p id="message-modal-text"></p>
+        <button id="message-modal-ok-button">OK</button>
+    </div>
+</div>
+
+<button id="sidebar-toggle" aria-label="メニューを開く"></button>
+
+
+<button id="mobile-fab" class="fab">
+    <i class="fas fa-plus"></i>
+</button>
+
+<div class="mobile-bottom-nav">
+    <button class="nav-item active" data-target="files">
+        <i class="fas fa-folder"></i>
+        <span>ファイル</span>
+    </button>
+    <button class="nav-item" data-target="upload-trigger">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span>アップロード</span>
+    </button>
+    <button class="nav-item" data-target="settings">
+        <i class="fas fa-cog"></i>
+        <span>設定</span>
+    </button>
+</div>
+
+<script src="indexhtml.js"></script>
+
+</body>
+</html>
