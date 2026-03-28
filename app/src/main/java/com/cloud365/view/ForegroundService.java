@@ -71,6 +71,14 @@ public class ForegroundService extends Service {
                     }
                 }
 
+                if (uploadFileToNotifId.containsKey(fileKey)) {
+                    Integer notifId = uploadFileToNotifId.get(fileKey);
+                    refreshStaleTimeout(notifId);
+                    uploadPercent = 0;
+                    lastUpload = fileKey;
+                    return;
+                }
+
                 int notifId = createAndShowProgressNotification(fileKey);
                 uploadFileToNotifId.put(fileKey, notifId);
                 uploadPercent = 0;
