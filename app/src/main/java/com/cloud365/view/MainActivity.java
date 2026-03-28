@@ -156,6 +156,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
+                view.evaluateJavascript("(function(){try { var el = document.querySelector('label[for=\"file-upload\"]'); if (el && el.parentElement) { el.parentElement.style.display = 'none'; } } catch(e) {} })();", null);
+
                 if (url.contains("login.html") || url.contains("register.html")) {
                     redirectToLogin();
                     return;
