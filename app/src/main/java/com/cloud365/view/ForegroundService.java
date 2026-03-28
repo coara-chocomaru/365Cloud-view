@@ -18,7 +18,9 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ForegroundService extends Service {
@@ -42,10 +44,12 @@ public class ForegroundService extends Service {
 
     private final Map<String, Integer> uploadFileToNotifId = new HashMap<>();
     private final Map<Integer, Runnable> notifIdToTimeout = new HashMap<>();
+    private final Set<String> recentlyCompleted = new HashSet<>();
     private final AtomicInteger nextNotifId = new AtomicInteger(5000);
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private static final long STALE_TIMEOUT_MS = 120000;
+    private static final long RECENTLY_COMPLETED_BLOCK_MS = 3000;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -71,9 +75,11 @@ public class ForegroundService extends Service {
                     }
                 }
 
-                if (uploadFileToNotifId.containsKey(fileKey)) {
-                    Integer notifId = uploadFileToNotifId.get(fileKey);
-                    refreshStaleTimeout(notifId);
+                if (recentlyCompleted.contains(fileKey) || uploadFileToNotifId.containsKey(fileKey)) {
+                    Integer existingId = uploadFileToNotifId.get(fileKey);
+                    if (existingId != null) {
+                        refreshStaleTimeout(existingId);
+                    }
                     uploadPercent = 0;
                     lastUpload = fileKey;
                     return;
@@ -119,6 +125,9 @@ public class ForegroundService extends Service {
                     int nid = createAndShowProgressNotification(matchKey);
                     completeProgressNotificationById(nid, matchKey);
                 }
+
+                recentlyCompleted.add(matchKey);
+                handler.postDelayed(() -> recentlyCompleted.remove(matchKey), RECENTLY_COMPLETED_BLOCK_MS);
 
                 uploadPercent = -1;
                 lastUpload = matchKey != null ? matchKey : "";
