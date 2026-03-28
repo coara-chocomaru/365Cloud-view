@@ -143,6 +143,7 @@
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                list-style: none !important;
             }
             #file-list li {
                 padding: 14px 12px !important;
@@ -153,6 +154,24 @@
                 width: 100% !important;
                 overflow: hidden !important;
                 box-sizing: border-box !important;
+            }
+            #file-list li .item-name {
+                flex: 1 !important;
+                min-width: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                overflow: hidden !important;
+            }
+            #file-list li .item-name span {
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+            #file-list li .item-actions {
+                flex-shrink: 0 !important;
+                display: flex !important;
+                gap: 4px !important;
             }
             #mobile-upload-progress {
                 position: sticky;
