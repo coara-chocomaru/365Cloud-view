@@ -33,8 +33,6 @@ public class ForegroundService extends Service {
     private static final String PROGRESS_CHANNEL_PREFIX = "cloud365_progress_channel_";
 
     private String storageInfo = "使用容量: -- / --";
-    private String lastUpload = "";
-    private int uploadPercent = -1;
     private boolean running = false;
 
     private final Map<String, Integer> uploadFileToNotifId = new HashMap<>();
@@ -69,11 +67,15 @@ public class ForegroundService extends Service {
                         }
                     }
                 }
-                int notifId = createAndShowProgressNotification(fileKey, true);
-                uploadFileToNotifId.put(fileKey, notifId);
-                uploadPercent = 0;
-                lastUpload = fileKey;
-                scheduleStaleTimeout(notifId, fileKey, true);
+                if (uploadFileToNotifId.containsKey(fileKey)) {
+                    Integer existingId = uploadFileToNotifId.get(fileKey);
+                    updateProgressNotificationById(existingId, fileKey, 0);
+                    refreshStaleTimeout(existingId);
+                } else {
+                    int notifId = createAndShowProgressNotification(fileKey, true);
+                    uploadFileToNotifId.put(fileKey, notifId);
+                    scheduleStaleTimeout(notifId, fileKey, true);
+                }
             } else if (ACTION_UPLOAD_PROGRESS.equals(action)) {
                 String key = intent.getStringExtra("key");
                 int percent = intent.getIntExtra("percent", -1);
@@ -88,8 +90,6 @@ public class ForegroundService extends Service {
                     refreshStaleTimeout(notifId);
                 }
                 updateProgressNotificationById(notifId, matchKey, percent);
-                uploadPercent = percent;
-                lastUpload = matchKey;
             } else if (ACTION_UPLOAD_COMPLETED.equals(action)) {
                 String key = intent.getStringExtra("key");
                 String matchKey = findUploadKeyMatching(key);
@@ -102,8 +102,6 @@ public class ForegroundService extends Service {
                     int nid = createAndShowProgressNotification(matchKey, true);
                     completeProgressNotificationById(nid, matchKey, true);
                 }
-                uploadPercent = -1;
-                lastUpload = matchKey != null ? matchKey : "";
             } else if (ACTION_STOP_FOREGROUND.equals(action)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     stopForeground(Service.STOP_FOREGROUND_REMOVE);
