@@ -219,41 +219,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 try {
-                    Uri uri = request.getUrl();
-                    String path = uri.getPath();
-                    if (path == null) {
-                        return super.shouldInterceptRequest(view, request);
-                    }
+                    String path = request.getUrl().getPath();
+                    if (path == null) return super.shouldInterceptRequest(view, request);
 
                     if (isIndexJsPath(path)) {
                         InputStream is = getAssetStream(ASSET_INDEX_JS);
-                        if (is != null) {
-                            return new WebResourceResponse("application/javascript", "UTF-8", is);
-                        }
+                        if (is != null) return new WebResourceResponse("application/javascript", "UTF-8", is);
                     }
-
                     if (isIndexHtmlPath(path)) {
                         InputStream is = getAssetStream(ASSET_INDEX_HTML);
-                        if (is != null) {
-                            return new WebResourceResponse("text/html", "UTF-8", is);
-                        }
+                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
                     }
-
                     if (isSettingsHtmlPath(path)) {
                         InputStream is = getAssetStream(ASSET_SETTINGS_HTML);
-                        if (is != null) {
-                            return new WebResourceResponse("text/html", "UTF-8", is);
-                        }
+                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
                     }
-
                     if (isShareManagementHtmlPath(path)) {
                         InputStream is = getAssetStream(ASSET_SHARE_MANAGEMENT_HTML);
-                        if (is != null) {
-                            return new WebResourceResponse("text/html", "UTF-8", is);
-                        }
+                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
                     }
-                } catch (Exception ignored) {
-                }
+                } catch (Exception ignored) {}
 
                 return super.shouldInterceptRequest(view, request);
             }
@@ -261,41 +246,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
                 try {
-                    Uri uri = Uri.parse(url);
-                    String path = uri.getPath();
-                    if (path == null) {
-                        return super.shouldInterceptRequest(view, url);
-                    }
+                    String path = Uri.parse(url).getPath();
+                    if (path == null) return super.shouldInterceptRequest(view, url);
 
                     if (isIndexJsPath(path)) {
                         InputStream is = getAssetStream(ASSET_INDEX_JS);
-                        if (is != null) {
-                            return new WebResourceResponse("application/javascript", "UTF-8", is);
-                        }
+                        if (is != null) return new WebResourceResponse("application/javascript", "UTF-8", is);
                     }
-
                     if (isIndexHtmlPath(path)) {
                         InputStream is = getAssetStream(ASSET_INDEX_HTML);
-                        if (is != null) {
-                            return new WebResourceResponse("text/html", "UTF-8", is);
-                        }
+                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
                     }
-
                     if (isSettingsHtmlPath(path)) {
                         InputStream is = getAssetStream(ASSET_SETTINGS_HTML);
-                        if (is != null) {
-                            return new WebResourceResponse("text/html", "UTF-8", is);
-                        }
+                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
                     }
-
                     if (isShareManagementHtmlPath(path)) {
                         InputStream is = getAssetStream(ASSET_SHARE_MANAGEMENT_HTML);
-                        if (is != null) {
-                            return new WebResourceResponse("text/html", "UTF-8", is);
-                        }
+                        if (is != null) return new WebResourceResponse("text/html", "UTF-8", is);
                     }
-                } catch (Exception ignored) {
-                }
+                } catch (Exception ignored) {}
 
                 return super.shouldInterceptRequest(view, url);
             }
@@ -343,27 +313,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isIndexJsPath(String path) {
-        return path.endsWith("/" + ASSET_INDEX_JS) || path.equals("/" + ASSET_INDEX_JS) || path.endsWith("/" + ASSET_INDEX_JS + "/");
+        return path != null && path.endsWith("/" + ASSET_INDEX_JS);
     }
 
     private boolean isIndexHtmlPath(String path) {
-        return path.endsWith("/" + ASSET_INDEX_HTML) || path.equals("/" + ASSET_INDEX_HTML) || path.endsWith("/" + ASSET_INDEX_HTML + "/");
+        return path != null && path.endsWith("/" + ASSET_INDEX_HTML);
     }
 
     private boolean isSettingsHtmlPath(String path) {
-        return path.endsWith("/" + ASSET_SETTINGS_HTML) || path.equals("/" + ASSET_SETTINGS_HTML) || path.endsWith("/" + ASSET_SETTINGS_HTML + "/");
+        return path != null && path.endsWith("/" + ASSET_SETTINGS_HTML);
     }
 
     private boolean isShareManagementHtmlPath(String path) {
-        return path.endsWith("/" + ASSET_SHARE_MANAGEMENT_HTML) || path.equals("/" + ASSET_SHARE_MANAGEMENT_HTML) || path.endsWith("/" + ASSET_SHARE_MANAGEMENT_HTML + "/");
+        return path != null && path.endsWith("/" + ASSET_SHARE_MANAGEMENT_HTML);
     }
 
     private boolean isLocalAssetPageUrl(String url) {
         if (url == null) return false;
         try {
-            Uri uri = Uri.parse(url);
-            String path = uri.getPath();
-            if (path == null) return false;
+            String path = Uri.parse(url).getPath();
             return isSettingsHtmlPath(path) || isShareManagementHtmlPath(path);
         } catch (Exception e) {
             return false;
@@ -372,22 +340,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadAssetPageFromUrl(String url) {
         try {
-            Uri uri = Uri.parse(url);
-            String path = uri.getPath();
-            if (path == null) {
-                return;
-            }
+            String path = Uri.parse(url).getPath();
+            if (path == null) return;
 
             if (isSettingsHtmlPath(path)) {
-                loadAssetPage(ASSET_SETTINGS_HTML, BASE_URL + ASSET_SETTINGS_HTML);
-                return;
+                loadAssetPage(ASSET_SETTINGS_HTML, url);
+            } else if (isShareManagementHtmlPath(path)) {
+                loadAssetPage(ASSET_SHARE_MANAGEMENT_HTML, url);
             }
-
-            if (isShareManagementHtmlPath(path)) {
-                loadAssetPage(ASSET_SHARE_MANAGEMENT_HTML, BASE_URL + ASSET_SHARE_MANAGEMENT_HTML);
-            }
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
     }
 
     private void loadAssetPage(String assetName, String historyUrl) {
@@ -540,9 +501,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } catch (Exception ignored) {
             } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
+                if (cursor != null) cursor.close();
             }
         }
         if (result == null || result.trim().isEmpty()) {
@@ -644,12 +603,7 @@ public class MainActivity extends AppCompatActivity {
                         sb.append(name);
                     }
                 }
-                String msg;
-                if (sb.length() > 0) {
-                    msg = sb.toString() + " ファイルが選択されました";
-                } else {
-                    msg = "ファイルが選択されました";
-                }
+                String msg = sb.length() > 0 ? sb.toString() + " ファイルが選択されました" : "ファイルが選択されました";
                 Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
             }
             filePathCallback = null;
@@ -708,8 +662,7 @@ public class MainActivity extends AppCompatActivity {
         if (intent == null) return;
         try {
             sendBroadcast(intent);
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
     }
 
     private void broadcastStorageUpdate(String storage) {
@@ -734,17 +687,13 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void fileDeselected() {
             if (isFinishing()) return;
-            handler.post(() -> {
-                Toast.makeText(MainActivity.this, "ファイルが解除されました", Toast.LENGTH_SHORT).show();
-            });
+            handler.post(() -> Toast.makeText(MainActivity.this, "ファイルが解除されました", Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
         public void fileNotSelected() {
             if (isFinishing()) return;
-            handler.post(() -> {
-                Toast.makeText(MainActivity.this, "ファイルは選択されていません", Toast.LENGTH_SHORT).show();
-            });
+            handler.post(() -> Toast.makeText(MainActivity.this, "ファイルは選択されていません", Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
