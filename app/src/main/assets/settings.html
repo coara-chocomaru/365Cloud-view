@@ -2,232 +2,121 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ユーザー設定 - 365Cloud</title>
-    <link rel="stylesheet" href="365Cloud.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="/365Cloud/365Cloud_Mainicon.png">
     <link rel="apple-touch-icon" href="/365Cloud/365Cloud_Mainicon.png">
     <link rel="shortcut icon" href="/365Cloud/365Cloud_Mainicon.png">
     <style>
         :root {
-            --bg-color-body: #f8fafc;
-            --bg-color-app: #ffffff;
-            --bg-color-main: #f1f5f9;
-            --bg-color-sidebar: #e2e8f0;
-            --bg-color-action-section: #cbd5e1;
-            --bg-color-file-item: #e2e8f0;
-            --accent-color: #3b82f6;
-            --accent-color-dark-theme: #60a5fa;
-            --text-color-primary: #0f172a;
-            --text-color-secondary: #334155;
-            --text-color-heading: #0f172a;
-            --text-color-message-success: #16a34a;
-            --text-color-message-error: #dc2626;
-            --border-color-primary: #cbd5e1;
-            --border-color-secondary: #cbd5e1;
-            --button-bg-primary: #3b82f6;
-            --button-bg-secondary: #475569;
-            --card-bg-color: var(--bg-color-app);
-            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            --card-border-color: var(--border-color-secondary);
-            --input-bg-color: var(--bg-color-main);
-            --nav-bg-color: var(--bg-color-sidebar);
-            --nav-link-hover-bg: var(--bg-color-action-section);
-            --nav-link-active-bg: var(--accent-color);
-        }
-
-        body.dark-mode {
-            --bg-color-body: #0f172a;
-            --bg-color-app: #1e293b;
-            --bg-color-main: #1e293b;
-            --bg-color-sidebar: #111827;
-            --bg-color-action-section: #1f2937;
-            --bg-color-file-item: #334155;
-            --accent-color: #3b82f6;
-            --accent-color-dark-theme: #60a5fa;
-            --text-color-primary: #f8fafc;
-            --text-color-secondary: #cbd5e1;
-            --text-color-heading: #f8fafc;
-            --text-color-message-success: #4ade80;
-            --text-color-message-error: #f87171;
-            --border-color-primary: #334155;
-            --border-color-secondary: #334155;
-            --button-bg-primary: #3b82f6;
-            --button-bg-secondary: #334155;
-            --card-bg-color: var(--bg-color-app);
-            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --card-border-color: #334155;
-            --input-bg-color: var(--bg-color-file-item);
-            --nav-bg-color: #1e293b;
-            --nav-link-hover-bg: #2a3649;
-            --nav-link-active-bg: var(--accent-color-dark-theme);
+            --bg-body: #0f172a;
+            --bg-header: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --accent: #3b82f6;
+            --border: #334155;
         }
 
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            min-height: 100%;
-        }
-
         body {
-            display: block;
-            min-height: 100vh;
-            height: auto;
-            overflow: hidden;
-            background-color: var(--bg-color-body);
-            color: var(--text-color-primary);
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        a {
-            color: inherit;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 20px;
+            line-height: 1.5;
         }
 
         .settings-header {
-            padding: 20px 24px;
-            background-color: var(--nav-bg-color);
-            border-bottom: 1px solid var(--card-border-color);
+            background-color: var(--bg-header);
+            padding: 15px 16px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .settings-header h1 {
-            font-size: 1.8em;
-            margin: 0;
-            font-weight: 700;
-        }
-
-        .btn,
-        .btn-primary,
-        .btn-secondary,
-        .back-button {
-            appearance: none;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 500;
-            padding: 12px 24px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: filter 0.15s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .btn:hover,
-        .btn-primary:hover,
-        .btn-secondary:hover,
-        .back-button:hover {
-            filter: brightness(1.05);
-        }
-
-        .btn:disabled,
-        .btn-primary:disabled,
-        .btn-secondary:disabled,
-        .back-button:disabled {
-            opacity: 0.65;
-            cursor: not-allowed;
-        }
-
-        .btn {
-            background-color: var(--button-bg-secondary);
-            color: white;
-        }
-
-        .btn-primary {
-            background-color: var(--button-bg-primary);
-            color: white;
-        }
-
-        .btn-secondary {
-            background-color: #2a3b4d;
-            border: 1px solid #4a5b6d;
-            color: white;
+            font-size: 1.55em;
+            font-weight: 600;
         }
 
         .back-button {
             background-color: #334155;
             color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 9999px;
+            font-size: 0.95em;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .settings-layout {
-            display: flex;
-            height: calc(100vh - 81px);
-            min-height: calc(100vh - 81px);
-        }
-
         .settings-nav {
-            width: 240px;
-            background-color: var(--nav-bg-color);
-            padding: 20px;
-            border-right: 1px solid var(--card-border-color);
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background-color: var(--bg-header);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 0;
         }
 
         .settings-nav ul {
             list-style: none;
             padding: 0;
             margin: 0;
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            gap: 4px;
+            padding-left: 12px;
+        }
+
+        .settings-nav li {
+            flex: 0 0 auto;
         }
 
         .settings-nav li a {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 15px;
-            padding: 15px 20px;
-            color: var(--text-color-primary);
+            gap: 4px;
+            padding: 10px 14px;
+            color: var(--text-primary);
             text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 5px;
+            font-size: 0.82em;
             font-weight: 500;
-            transition: background-color 0.2s, color 0.2s;
+            border-radius: 12px;
+            min-width: 72px;
+            transition: background-color 0.2s;
         }
 
         .settings-nav li a .fa-fw {
-            width: 20px;
+            font-size: 1.45em;
         }
 
         .settings-nav li a:hover {
-            background-color: var(--nav-link-hover-bg);
+            background-color: #334155;
         }
 
         .settings-nav li a.active {
-            background-color: var(--button-bg-primary);
+            background-color: var(--accent);
             color: white;
         }
 
-        .nav-footer {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid var(--card-border-color);
-        }
-
-        .nav-footer .btn,
-        .nav-footer .btn-secondary {
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .settings-content {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-            overflow-x: hidden;
+        .main-content {
+            padding: 20px 16px;
         }
 
         .settings-section {
@@ -236,13 +125,13 @@
 
         .settings-section.active {
             display: block;
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.4s ease-out;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(12px);
             }
             to {
                 opacity: 1;
@@ -251,28 +140,25 @@
         }
 
         .section-description {
-            margin-top: -15px;
-            margin-bottom: 25px;
-            color: var(--text-color-secondary);
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            margin-bottom: 20px;
         }
 
         .card {
-            background-color: var(--card-bg-color);
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 30px;
-            border: 1px solid var(--card-border-color);
-            transition: background-color 0.3s, border-color 0.3s;
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
         }
 
         .card h2 {
-            color: var(--text-color-heading);
-            border-bottom: 1px solid var(--border-color-secondary);
-            padding-bottom: 15px;
-            margin-top: 0;
-            margin-bottom: 25px;
-            font-size: 1.5em;
+            font-size: 1.45em;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
         }
 
         .form-group {
@@ -283,7 +169,8 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--text-color-secondary);
+            color: var(--text-secondary);
+            font-size: 0.95em;
         }
 
         input[type="text"],
@@ -291,10 +178,10 @@
         input[type="file"] {
             width: 100%;
             padding: 14px 16px;
-            background-color: var(--input-bg-color);
-            color: var(--text-color-primary);
-            border: 1px solid var(--border-color-primary);
+            background-color: #334155;
+            border: 1px solid var(--border);
             border-radius: 10px;
+            color: var(--text-primary);
             font-size: 1em;
         }
 
@@ -302,36 +189,26 @@
             padding: 12px 14px;
         }
 
-        input:focus-visible,
-        .btn:focus-visible,
-        .btn-primary:focus-visible,
-        .btn-secondary:focus-visible,
-        .back-button:focus-visible,
-        .settings-nav li a:focus-visible,
-        .close-button:focus-visible {
-            outline: 2px solid var(--accent-color);
-            outline-offset: 2px;
-        }
-
         #message {
-            text-align: center;
-            margin: 12px 16px 20px;
+            margin: 12px 16px;
             padding: 12px;
             border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
             display: none;
+            min-height: 0;
             word-break: break-word;
-            font-weight: 600;
         }
 
         #message.success {
-            background-color: rgba(40, 167, 69, 0.2);
-            color: var(--text-color-message-success);
+            background-color: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
             display: block;
         }
 
         #message.error {
-            background-color: rgba(220, 53, 69, 0.2);
-            color: var(--text-color-message-error);
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
             display: block;
         }
 
@@ -345,40 +222,40 @@
         #avatar-preview {
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--border-color-primary);
-            background-color: var(--bg-color-body);
-            width: 80px;
-            height: 80px;
+            border: 3px solid var(--accent);
+            width: 72px;
+            height: 72px;
+            background-color: #0f172a;
             flex-shrink: 0;
         }
 
         .username-form-group {
             display: flex;
-            align-items: center;
-            gap: 10px;
             flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
         }
 
         .username-form-group label {
             flex-shrink: 0;
-            margin-bottom: 0;
         }
 
         .username-form-group input {
-            flex-grow: 1;
+            flex: 1;
             min-width: 180px;
-            max-width: 250px;
         }
 
         .username-form-group button {
             flex-shrink: 0;
+            padding: 12px 24px;
         }
 
         .history-table-container {
-            max-height: 400px;
+            max-height: 380px;
             overflow-y: auto;
-            border: 1px solid var(--border-color-primary);
-            border-radius: 8px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background-color: #1e293b;
         }
 
         .history-table {
@@ -388,16 +265,17 @@
 
         .history-table th,
         .history-table td {
-            padding: 12px 15px;
+            padding: 14px 12px;
             text-align: left;
-            border-bottom: 1px solid var(--border-color-primary);
+            font-size: 0.95em;
+            border-bottom: 1px solid var(--border);
         }
 
         .history-table th {
-            background-color: var(--input-bg-color);
+            background-color: #0f172a;
             position: sticky;
             top: 0;
-            z-index: 1;
+            z-index: 10;
         }
 
         .history-table tr:last-child td {
@@ -406,26 +284,27 @@
 
         .status-indicator {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.9em;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.85em;
+            font-weight: 600;
         }
 
         .status-indicator.enabled {
-            background-color: rgba(40, 167, 69, 0.3);
-            color: #20c997;
+            background-color: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
         }
 
         .status-indicator.disabled {
-            background-color: rgba(108, 117, 125, 0.3);
-            color: #adb5bd;
+            background-color: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
         }
 
         .modal {
             display: none;
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(15, 23, 42, 0.95);
@@ -436,14 +315,13 @@
         }
 
         .modal-content {
-            background-color: var(--card-bg-color);
+            background-color: #1e293b;
             width: 100%;
             max-width: 420px;
             border-radius: 20px;
             padding: 24px;
             position: relative;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--card-border-color);
         }
 
         .close-button {
@@ -471,62 +349,47 @@
             margin-top: 8px;
         }
 
-        section#appearance.settings-section {
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #64748b;
+            color: white;
+        }
+
+        .btn {
+            background-color: #64748b;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .btn:hover {
+            filter: brightness(1.05);
+        }
+
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .btn:focus-visible,
+        .back-button:focus-visible,
+        .settings-nav li a:focus-visible,
+        input:focus-visible,
+        .close-button:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .appearance-hidden {
             display: none;
-        }
-
-        @media (max-width: 900px) {
-            body {
-                overflow: auto;
-            }
-
-            .settings-layout {
-                flex-direction: column;
-                height: auto;
-                min-height: auto;
-            }
-
-            .settings-nav {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid var(--card-border-color);
-            }
-
-            .settings-content {
-                overflow: visible;
-                padding: 20px 16px 28px;
-            }
-
-            .nav-footer {
-                display: none;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .settings-header {
-                padding: 16px;
-            }
-
-            .settings-header h1 {
-                font-size: 1.45em;
-            }
-
-            .settings-content {
-                padding: 16px;
-            }
-
-            .card {
-                padding: 18px;
-            }
-
-            .username-form-group input {
-                max-width: 100%;
-            }
-
-            .username-form-group button,
-            .form-group button {
-                width: 100%;
-            }
         }
     </style>
 </head>
@@ -539,89 +402,87 @@
 
     <div id="message" aria-live="polite"></div>
 
-    <div class="settings-layout">
-        <nav class="settings-nav">
-            <ul>
-                <li><a href="#profile" class="active"><i class="fas fa-user-circle fa-fw"></i> プロフィール</a></li>
-                <li><a href="#security"><i class="fas fa-shield-alt fa-fw"></i> セキュリティ</a></li>
-                <li><a href="#login-history"><i class="fas fa-history fa-fw"></i> ログイン履歴</a></li>
-                <li><a href="#appearance"><i class="fas fa-palette fa-fw"></i> 表示設定</a></li>
-            </ul>
-            <div class="nav-footer">
-                <a href="/365Cloud/index.html" class="btn btn-secondary">ファイル一覧に戻る</a>
-            </div>
-        </nav>
+    <nav class="settings-nav">
+        <ul>
+            <li><a href="#profile" class="active"><i class="fas fa-user-circle fa-fw"></i> プロフィール</a></li>
+            <li><a href="#security"><i class="fas fa-shield-alt fa-fw"></i> セキュリティ</a></li>
+            <li><a href="#login-history"><i class="fas fa-history fa-fw"></i> ログイン履歴</a></li>
+            <li><a href="#appearance"><i class="fas fa-palette fa-fw"></i> 表示設定</a></li>
+        </ul>
+    </nav>
 
-        <main class="settings-content">
-            <section id="profile" class="settings-section active">
-                <h2>プロフィール設定</h2>
-                <p class="section-description">あなたの公開プロフィール情報とアバターを管理します。</p>
-                <div class="card">
-                    <div class="form-group username-form-group">
-                        <label for="username-input">ユーザー名</label>
-                        <input type="text" id="username-input" value="" maxlength="10" autocomplete="nickname" spellcheck="false">
-                        <button id="save-username-button" type="button" class="btn btn-primary">変更を保存</button>
-                    </div>
-                    <div class="form-group avatar-preview-container">
-                        <img id="avatar-preview" src="/365Cloud/api/user/avatar" alt="現在のアバター" width="80" height="80">
+    <div class="main-content">
+        <section id="profile" class="settings-section active">
+            <h2>プロフィール設定</h2>
+            <p class="section-description">あなたの公開プロフィール情報とアバターを管理します。</p>
+            <div class="card">
+                <div class="form-group username-form-group">
+                    <label for="username-input">ユーザー名</label>
+                    <input type="text" id="username-input" value="" maxlength="10" autocomplete="nickname" spellcheck="false">
+                    <button id="save-username-button" type="button" class="btn btn-primary">変更を保存</button>
+                </div>
+
+                <form id="avatar-upload-form" class="form-group" enctype="multipart/form-data" method="post" action="/365Cloud/api/user/avatar">
+                    <div class="avatar-preview-container">
+                        <img id="avatar-preview" src="/365Cloud/api/user/avatar" alt="現在のアバター" width="72" height="72">
                         <div style="min-width: 220px; flex: 1;">
                             <label for="avatar-upload">アイコン画像を変更</label>
-                            <input type="file" id="avatar-upload" accept="image/png, image/jpeg, image/gif">
-                            <button id="upload-avatar-button" type="button" class="btn" style="margin-top: 10px;">アップロード</button>
+                            <input type="file" id="avatar-upload" name="avatar" accept="image/png, image/jpeg, image/gif">
+                            <button id="upload-avatar-button" type="submit" class="btn" style="margin-top: 10px;">アップロード</button>
                         </div>
                     </div>
-                </div>
-            </section>
+                </form>
+            </div>
+        </section>
 
-            <section id="security" class="settings-section">
-                <h2>セキュリティ設定</h2>
-                <p class="section-description">パスワードの変更と二要素認証（2FA）でアカウントを保護します。</p>
-                <div class="card">
-                    <div class="form-group">
-                        <label>パスワード</label>
-                        <button id="open-password-modal" type="button" class="btn">パスワードを変更</button>
-                    </div>
-                    <div class="form-group">
-                        <label>二要素認証 (2FA)</label>
-                        <div>
-                            <p style="margin: 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                                ステータス: <span id="2fa-status"></span>
-                                <button id="toggle-2fa-button" type="button" class="btn btn-secondary"></button>
-                            </p>
-                        </div>
+        <section id="security" class="settings-section">
+            <h2>セキュリティ設定</h2>
+            <p class="section-description">パスワードの変更と二要素認証（2FA）でアカウントを保護します。</p>
+            <div class="card">
+                <div class="form-group">
+                    <label>パスワード</label>
+                    <button id="open-password-modal" type="button" class="btn">パスワードを変更</button>
+                </div>
+                <div class="form-group">
+                    <label>二要素認証 (2FA)</label>
+                    <div>
+                        <p style="margin: 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            ステータス: <span id="2fa-status"></span>
+                            <button id="toggle-2fa-button" type="button" class="btn btn-secondary"></button>
+                        </p>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <section id="login-history" class="settings-section">
-                <h2>ログイン履歴</h2>
-                <p class="section-description">あなたのアカウントへの最近のログインアクティビティを確認します。</p>
-                <div class="card">
-                    <div id="login-history-container" class="history-table-container">
-                        <table class="history-table">
-                            <thead>
-                                <tr>
-                                    <th>日時</th>
-                                    <th>IPアドレス</th>
-                                </tr>
-                            </thead>
-                            <tbody id="login-history-body"></tbody>
-                        </table>
-                    </div>
+        <section id="login-history" class="settings-section">
+            <h2>ログイン履歴</h2>
+            <p class="section-description">あなたのアカウントへの最近のログインアクティビティを確認します。</p>
+            <div class="card">
+                <div id="login-history-container" class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>日時</th>
+                                <th>IPアドレス</th>
+                            </tr>
+                        </thead>
+                        <tbody id="login-history-body"></tbody>
+                    </table>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <section id="appearance" class="settings-section" style="display: none;">
-                <h2>表示設定</h2>
-                <p class="section-description">サイトの見た目をカスタマイズします。</p>
-                <div class="card">
-                    <div class="form-group">
-                        <label>テーマ</label>
-                        <button id="dark-mode-toggle" type="button" class="btn">ライトモードに切り替え</button>
-                    </div>
+        <section id="appearance" class="settings-section appearance-hidden" aria-hidden="true">
+            <h2>表示設定</h2>
+            <p class="section-description">サイトの見た目をカスタマイズします。</p>
+            <div class="card">
+                <div class="form-group">
+                    <label>テーマ</label>
+                    <button id="dark-mode-toggle" type="button" class="btn">ライトモードに切り替え</button>
                 </div>
-            </section>
-        </main>
+            </div>
+        </section>
     </div>
 
     <div id="password-modal" class="modal" aria-hidden="true">
@@ -646,11 +507,99 @@
         </div>
     </div>
 
-    <script src="settings.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            const messageElement = document.getElementById('message');
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const body = document.body;
+            const passwordModal = document.getElementById('password-modal');
+            const openPasswordModalBtn = document.getElementById('open-password-modal');
+            const closePasswordModalBtn = document.getElementById('close-password-modal');
+            const avatarUploadForm = document.getElementById('avatar-upload-form');
+            const avatarUploadInput = document.getElementById('avatar-upload');
+            const uploadAvatarButton = document.getElementById('upload-avatar-button');
+            const avatarPreview = document.getElementById('avatar-preview');
             const navLinks = document.querySelectorAll('.settings-nav ul a');
             const sections = document.querySelectorAll('.settings-section');
+
+            let currentUserSettings = {};
+
+            const showMessage = (text, type = 'success') => {
+                messageElement.textContent = text;
+                messageElement.className = type;
+                window.scrollTo(0, 0);
+                setTimeout(() => {
+                    messageElement.textContent = '';
+                    messageElement.className = '';
+                }, 5000);
+            };
+
+            const enableDarkMode = () => {
+                body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+                if (darkModeToggle) darkModeToggle.textContent = 'ライトモードに切り替え';
+            };
+
+            const disableDarkMode = () => {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+                if (darkModeToggle) darkModeToggle.textContent = 'ダークモードに切り替え';
+            };
+
+            const update2FAUI = (is2FAEnabled) => {
+                const statusEl = document.getElementById('2fa-status');
+                const toggleBtn = document.getElementById('toggle-2fa-button');
+                if (is2FAEnabled) {
+                    statusEl.innerHTML = '<span class="status-indicator enabled">有効</span>';
+                    toggleBtn.textContent = '無効にする';
+                } else {
+                    statusEl.innerHTML = '<span class="status-indicator disabled">無効</span>';
+                    toggleBtn.textContent = '有効にする';
+                }
+            };
+
+            const handle2FAToggle = async (is2FAEnabled) => {
+                if (is2FAEnabled) {
+                    const password = prompt('2FAを無効にするには、現在のパスワードを入力してください。');
+                    if (password === null) return;
+                    if (!password) {
+                        showMessage('パスワードが入力されていません。', 'error');
+                        return;
+                    }
+                    try {
+                        const response = await fetch('/365Cloud/api/2fa/disable', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password })
+                        });
+                        const data = await response.json().catch(() => ({}));
+                        if (!response.ok) throw new Error(data.message || '2FAの無効化に失敗しました。');
+                        showMessage(data.message || '2FAを無効にしました。', 'success');
+                        currentUserSettings.twoFactorEnabled = false;
+                        update2FAUI(false);
+                    } catch (error) {
+                        showMessage(error.message, 'error');
+                    }
+                } else {
+                    window.location.href = '/365Cloud/2fa-setup.html';
+                }
+            };
+
+            const updateLoginHistory = (history) => {
+                const historyBody = document.getElementById('login-history-body');
+                historyBody.innerHTML = '';
+                if (!history || history.length === 0) {
+                    historyBody.innerHTML = '<tr><td colspan="2">ログイン履歴はありません。</td></tr>';
+                    return;
+                }
+                history.forEach(entry => {
+                    const row = historyBody.insertRow();
+                    const dateCell = row.insertCell();
+                    const ipCell = row.insertCell();
+                    dateCell.textContent = new Date(entry.timestamp).toLocaleString('ja-JP');
+                    ipCell.textContent = entry.ip;
+                });
+            };
 
             const activateSection = (hash) => {
                 const targetHash = hash || '#profile';
@@ -660,6 +609,59 @@
                 sections.forEach(section => {
                     section.classList.toggle('active', section.id === targetHash.substring(1));
                 });
+            };
+
+            const readResponseMessage = async (response) => {
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    const data = await response.json().catch(() => ({}));
+                    return data.message || data.error || '';
+                }
+                return await response.text().catch(() => '');
+            };
+
+            const handleAvatarUpload = async (event) => {
+                event.preventDefault();
+
+                const file = avatarUploadInput.files && avatarUploadInput.files[0];
+                if (!file) {
+                    showMessage('アップロードする画像を選択してください。', 'error');
+                    return;
+                }
+
+                if (!file.type || !file.type.startsWith('image/')) {
+                    showMessage('画像ファイルのみアップロード可能です。', 'error');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('avatar', file);
+
+                try {
+                    uploadAvatarButton.disabled = true;
+                    uploadAvatarButton.textContent = 'アップロード中...';
+
+                    const response = await fetch('/365Cloud/api/user/avatar', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+
+                    const responseText = await readResponseMessage(response);
+
+                    if (!response.ok) {
+                        throw new Error(responseText || response.statusText || 'アバターのアップロードに失敗しました。');
+                    }
+
+                    avatarPreview.src = '/365Cloud/api/user/avatar?t=' + Date.now();
+                    avatarUploadInput.value = '';
+                    showMessage(responseText || 'アバター画像を更新しました。', 'success');
+                } catch (error) {
+                    showMessage(error.message || '通信エラーが発生しました。', 'error');
+                } finally {
+                    uploadAvatarButton.disabled = false;
+                    uploadAvatarButton.textContent = 'アップロード';
+                }
             };
 
             navLinks.forEach(link => {
@@ -674,6 +676,143 @@
                 activateSection(window.location.hash);
             });
 
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', () => {
+                    if (body.classList.contains('dark-mode')) {
+                        disableDarkMode();
+                    } else {
+                        enableDarkMode();
+                    }
+                });
+            }
+
+            openPasswordModalBtn.addEventListener('click', () => {
+                passwordModal.style.display = 'flex';
+                passwordModal.setAttribute('aria-hidden', 'false');
+            });
+
+            closePasswordModalBtn.addEventListener('click', () => {
+                passwordModal.style.display = 'none';
+                passwordModal.setAttribute('aria-hidden', 'true');
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target === passwordModal) {
+                    passwordModal.style.display = 'none';
+                    passwordModal.setAttribute('aria-hidden', 'true');
+                }
+            });
+
+            avatarUploadForm.addEventListener('submit', handleAvatarUpload);
+
+            document.getElementById('password-change-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                messageElement.textContent = '';
+
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+
+                if (newPassword !== confirmPassword) {
+                    showMessage('新しいパスワードが一致しません。', 'error');
+                    return;
+                }
+
+                if (newPassword.length < 8) {
+                    showMessage('新しいパスワードは8文字以上である必要があります。', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/365Cloud/api/user/change-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ currentPassword, newPassword }),
+                        credentials: 'include'
+                    });
+
+                    const data = await response.json().catch(() => ({}));
+
+                    if (response.ok) {
+                        showMessage(data.message || 'パスワードを変更しました。', 'success');
+                        e.target.reset();
+                        passwordModal.style.display = 'none';
+                        passwordModal.setAttribute('aria-hidden', 'true');
+                    } else {
+                        throw new Error(data.message || 'パスワードの変更に失敗しました。');
+                    }
+                } catch (error) {
+                    showMessage(error.message, 'error');
+                }
+            });
+
+            document.getElementById('toggle-2fa-button').addEventListener('click', () => {
+                handle2FAToggle(currentUserSettings.twoFactorEnabled);
+            });
+
+            document.getElementById('save-username-button').addEventListener('click', async () => {
+                const newDisplayName = document.getElementById('username-input').value;
+                if (!newDisplayName || newDisplayName.trim() === '') {
+                    showMessage('表示名を入力してください。', 'error');
+                    return;
+                }
+
+                if (currentUserSettings.displayName === newDisplayName) {
+                    showMessage('表示名は変更されていません。', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/365Cloud/api/user/displayname', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ newDisplayName }),
+                        credentials: 'include'
+                    });
+
+                    const data = await response.json().catch(() => ({}));
+
+                    if (response.ok) {
+                        showMessage(data.message || '表示名を更新しました。', 'success');
+                        currentUserSettings.displayName = newDisplayName;
+                    } else {
+                        throw new Error(data.message || '表示名の更新に失敗しました。');
+                    }
+                } catch (error) {
+                    showMessage(error.message, 'error');
+                }
+            });
+
+            const storedTheme = localStorage.getItem('theme');
+            if (storedTheme === 'light') {
+                disableDarkMode();
+            } else {
+                enableDarkMode();
+            }
+
+            try {
+                const response = await fetch('/365Cloud/api/user/settings', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/365Cloud/login.html';
+                        return;
+                    }
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.message || '設定の読み込みに失敗しました。');
+                }
+
+                currentUserSettings = await response.json();
+                document.getElementById('username-input').value = currentUserSettings.displayName || '';
+                update2FAUI(!!currentUserSettings.twoFactorEnabled);
+                updateLoginHistory(currentUserSettings.loginHistory);
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+
+            avatarPreview.src = '/365Cloud/api/user/avatar?t=' + Date.now();
             activateSection(window.location.hash);
         });
     </script>
