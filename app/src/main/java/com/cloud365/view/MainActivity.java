@@ -343,7 +343,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // バックキー処理をOnBackPressedCallbackのみに統一（onKeyDownは完全に削除）
         backPressedCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -355,7 +354,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleBackPressed() {
         if (webView.canGoBack()) {
-            // アップロード中なら警告（同期崩れ防止）
             webView.evaluateJavascript(
                     "(function(){" +
                             "  return (window._cloud365ActiveUploads && Object.keys(window._cloud365ActiveUploads).length > 0) ? 'uploading' : 'safe';" +
@@ -554,7 +552,6 @@ public class MainActivity extends AppCompatActivity {
                 cookieManager.setCookie(BASE_URL, savedCookies);
                 cookieManager.flush();
             }
-            // reload() は削除 → これが同期崩れの最大原因だった
         }
         startAutoRefreshIfNeeded();
     }
