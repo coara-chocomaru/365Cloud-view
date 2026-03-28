@@ -15,6 +15,7 @@
                 display: none !important;
             }
         }
+        img[src*="/365Cloud/365Cloud_Mainicon.png"],img[src$="365Cloud_Mainicon.png"]{display:none!important;visibility:hidden!important;width:0!important;height:0!important;margin:0!important;padding:0!important;border:none!important;opacity:0!important;}
     </style>
 </head>
 <body>
@@ -79,11 +80,11 @@
             <div>
                 <label for="file-upload">ファイルを選択:</label>
                 <input type="file" id="file-upload" multiple>
-                <button id="upload-button">アップロード</button>
+                <button id="upload-button">選択解除ボタン</button>
                 <div id="progress-container" style="width: 100%; background-color: #f3f3f3; border-radius: 5px; margin-top: 10px; display: none;">
                     <div id="progress-bar" style="width: 0%; height: 20px; background-color: #4CAF50; border-radius: 5px; text-align: center; color: white;">0%</div>
                 </div>
-                <button id="clear-file-button">選択解除</button>
+                <button id="clear-file-button">ファイル選択解除</button>
             </div>
             <div id="upload-progress"></div>
             <div id="global-upload-progress-container" style="display: none;">
