@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>365Cloud</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="365Cloud.css">
@@ -123,10 +123,12 @@
                 flex-direction: column !important;
                 height: 100% !important;
                 margin: 0 !important;
+                align-items: center !important;
             }
             .file-list-header {
                 flex: 0 0 auto !important;
                 width: 100% !important;
+                max-width: 100% !important;
                 padding: 8px 12px !important;
                 display: flex !important;
                 align-items: center !important;
@@ -135,12 +137,16 @@
             #file-list-container {
                 flex: 1 !important;
                 width: 100% !important;
+                max-width: 100% !important;
                 height: auto !important;
                 min-height: 0 !important;
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
                 padding: 0 !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
             }
             #file-list {
                 width: 100% !important;
@@ -168,6 +174,7 @@
                 align-items: center !important;
                 gap: 8px !important;
                 overflow: hidden !important;
+                justify-content: flex-start !important;
             }
             #file-list li .item-name span {
                 white-space: nowrap !important;
@@ -393,6 +400,8 @@
          <div class="file-list-header">
              <div id="current-folder-display-main"></div>
          </div>
+
+
         <div id="file-list-container">
             <ul id="file-list">
             </ul>
@@ -401,6 +410,8 @@
          <div id="message"></div>
     </div>
 </div>
+
+
 <div id="preview-container">
     <div id="preview-content">
         <div id="preview-data"></div>
@@ -432,6 +443,8 @@
         </div>
     </div>
 </div>
+
+
 <div id="share-options-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
         <span class="close-button">×</span>
@@ -477,6 +490,8 @@
 </div>
 
 <button id="sidebar-toggle" aria-label="メニューを開く"></button>
+
+
 <button id="mobile-fab" class="fab">
     <i class="fas fa-plus"></i>
 </button>
