@@ -9,10 +9,7 @@
     <link rel="icon" type="image/png" href="/365Cloud/365Cloud_Mainicon.png">
     <link rel="apple-touch-icon" href="/365Cloud/365Cloud_Mainicon.png">
     <link rel="shortcut icon" href="/365Cloud/365Cloud_Mainicon.png">
-    
-    
     <style>
-    
         * {
             box-sizing: border-box;
         }
@@ -24,10 +21,7 @@
             font-size: 16px;
             -webkit-tap-highlight-color: transparent;
         }
-
-
         @media (max-width: 768px) {
-            
             .mobile-header {
                 display: flex !important;
                 position: sticky;
@@ -42,7 +36,6 @@
                 padding: 0 12px;
                 justify-content: space-between;
             }
-            
             .mobile-app-title {
                 flex: 1;
                 text-align: center;
@@ -52,7 +45,6 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            
             .mobile-breadcrumb {
                 display: flex !important;
                 position: sticky;
@@ -66,7 +58,6 @@
                 font-size: 15px;
                 justify-content: flex-start;
             }
-            
             #mobile-path-display {
                 flex: 1;
                 margin-left: 12px;
@@ -74,7 +65,6 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            
             .sidebar {
                 display: none !important;
                 position: fixed;
@@ -89,25 +79,19 @@
                 transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 padding: 16px 12px;
             }
-            
-            
             .sidebar.open {
                 left: 0 !important;
                 display: block !important;
             }
-            
-            
             .sidebar h2 {
                 font-size: 1.1rem;
                 margin: 20px 0 10px 0;
                 padding-bottom: 6px;
                 border-bottom: 2px solid #4CAF50;
             }
-            
             .action-section {
                 margin-bottom: 24px;
             }
-            
             .action-section button,
             .action-section input,
             .action-section label {
@@ -117,17 +101,13 @@
                 margin-bottom: 8px;
                 padding: 12px;
             }
-            
-        
             .app-container {
                 flex-direction: column !important;
                 height: calc(100vh - 56px - 48px - 60px) !important;
             }
-            
             .resizer {
                 display: none !important;
             }
-            
             .main-content {
                 flex: 1;
                 width: 100% !important;
@@ -137,7 +117,6 @@
                 flex-direction: column !important;
                 height: 100% !important;
             }
-            
             .file-list-header {
                 flex: 0 0 auto !important;
                 width: 100% !important;
@@ -145,7 +124,6 @@
                 display: flex !important;
                 align-items: center !important;
             }
-            
             #file-list-container {
                 flex: 1 !important;
                 width: 100% !important;
@@ -155,13 +133,11 @@
                 overflow-x: hidden !important;
                 padding: 0 !important;
             }
-            
             #file-list {
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }
-            
             #file-list li {
                 padding: 14px 12px !important;
                 font-size: 1.05rem !important;
@@ -172,8 +148,6 @@
                 overflow: hidden !important;
                 box-sizing: border-box !important;
             }
-            
-        
             #mobile-upload-progress {
                 position: sticky;
                 top: 104px;
@@ -182,7 +156,6 @@
                 padding: 8px 12px;
                 box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             }
-            
             .mobile-bottom-nav {
                 display: flex !important;
                 position: fixed;
@@ -198,7 +171,6 @@
                 justify-content: space-around;
                 padding: 0 8px;
             }
-            
             .mobile-bottom-nav .nav-item {
                 flex: 1;
                 display: flex;
@@ -209,12 +181,10 @@
                 padding: 4px 0;
                 min-height: 56px;
             }
-            
             .mobile-bottom-nav .nav-item i {
                 font-size: 1.4rem;
                 margin-bottom: 2px;
             }
-            
             #mobile-fab {
                 display: flex !important;
                 position: fixed;
@@ -231,11 +201,9 @@
                 justify-content: center;
                 font-size: 1.8rem;
             }
-            
             .modal-overlay {
                 padding: 0 !important;
             }
-            
             .modal-content,
             .share-modal-content,
             .hidden-options-content {
@@ -247,33 +215,27 @@
                 max-height: 100vh;
                 overflow-y: auto;
             }
-            
             #preview-container {
                 padding: 0;
             }
-            
             #preview-content {
                 width: 100% !important;
                 height: 100vh;
                 border-radius: 0;
             }
-            
             button, input[type="button"], input[type="submit"], .btn {
                 min-height: 48px;
                 font-size: 1.05rem;
                 padding: 12px 16px;
             }
-            
             h1, h2, h3 {
                 font-size: 1.25rem;
             }
-            
             #storage-info {
                 font-size: 1.05rem;
                 padding: 12px;
             }
         }
-        
         @media (min-width: 769px) {
             .mobile-header,
             .mobile-breadcrumb,
@@ -281,21 +243,17 @@
             .mobile-fab {
                 display: none !important;
             }
-            
             .sidebar {
                 display: block !important;
             }
-            
             .app-container {
                 height: calc(100vh - 20px) !important;
             }
         }
-        
         .drop-guide {
             font-size: 1.1rem;
             padding: 40px 20px;
         }
-        
         .progress-bar-outer,
         .mobile-upload-bar-bg {
             height: 12px;
@@ -508,9 +466,9 @@
         <i class="fas fa-cloud-upload-alt"></i>
         <span>アップロード</span>
     </button>
-    <button class="nav-item" data-target="settings">
-        <i class="fas fa-cog"></i>
-        <span>設定</span>
+    <button class="nav-item" data-target="upload-trigger">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span>アップロード開始</span>
     </button>
 </div>
 
