@@ -117,11 +117,12 @@
             .main-content {
                 flex: 1;
                 width: 100% !important;
-                padding: 8px 12px 12px;
+                padding: 8px 12px 12px !important;
                 overflow-y: auto;
                 display: flex !important;
                 flex-direction: column !important;
                 height: 100% !important;
+                margin: 0 !important;
             }
             .file-list-header {
                 flex: 0 0 auto !important;
@@ -129,6 +130,7 @@
                 padding: 8px 12px !important;
                 display: flex !important;
                 align-items: center !important;
+                margin: 0 !important;
             }
             #file-list-container {
                 flex: 1 !important;
@@ -138,9 +140,11 @@
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
                 padding: 0 !important;
+                margin: 0 !important;
             }
             #file-list {
                 width: 100% !important;
+                max-width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 list-style: none !important;
@@ -152,11 +156,13 @@
                 align-items: center !important;
                 gap: 12px !important;
                 width: 100% !important;
+                max-width: 100% !important;
                 overflow: hidden !important;
                 box-sizing: border-box !important;
+                margin: 0 !important;
             }
             #file-list li .item-name {
-                flex: 1 !important;
+                flex: 1 1 auto !important;
                 min-width: 0 !important;
                 display: flex !important;
                 align-items: center !important;
@@ -172,6 +178,7 @@
                 flex-shrink: 0 !important;
                 display: flex !important;
                 gap: 4px !important;
+                margin-left: auto !important;
             }
             #mobile-upload-progress {
                 position: sticky;
@@ -386,8 +393,6 @@
          <div class="file-list-header">
              <div id="current-folder-display-main"></div>
          </div>
-
-
         <div id="file-list-container">
             <ul id="file-list">
             </ul>
@@ -396,8 +401,6 @@
          <div id="message"></div>
     </div>
 </div>
-
-
 <div id="preview-container">
     <div id="preview-content">
         <div id="preview-data"></div>
@@ -429,8 +432,6 @@
         </div>
     </div>
 </div>
-
-
 <div id="share-options-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
         <span class="close-button">×</span>
@@ -476,8 +477,6 @@
 </div>
 
 <button id="sidebar-toggle" aria-label="メニューを開く"></button>
-
-
 <button id="mobile-fab" class="fab">
     <i class="fas fa-plus"></i>
 </button>
