@@ -47,6 +47,8 @@
             android:name=".ForegroundService"
             android:enabled="true"
             android:exported="false"
+            android:importantForAutofill="yes"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:foregroundServiceType="dataSync" />
         
         <provider
