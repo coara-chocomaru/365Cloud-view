@@ -66,7 +66,6 @@ public class ForegroundService extends Service {
                 uploadPercent = 0;
                 uploadLoaded = 0;
                 uploadTotal = 0;
-                String s = intent.getStringExtra("storageInfo");
                 updateForegroundNotification();
             } else if (ACTION_DELETE_COMPLETED.equals(action)) {
                 updateForegroundNotification();
