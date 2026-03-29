@@ -127,7 +127,7 @@ public class ForegroundService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 ? PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
-                : PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+                : PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
                 .setContentTitle("365Cloud")
@@ -160,7 +160,7 @@ public class ForegroundService extends Service {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 ? PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
-                : PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+                : PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, UPLOAD_CHANNEL_ID)
                 .setContentIntent(pendingIntent)
