@@ -29,6 +29,7 @@ public class ForegroundService extends Service {
     private static final String CHANNEL_NAME = "365Cloud Service";
 
     private String storageInfo = "使用容量: -- / --";
+    private String currentUploadFileName = "";
     private boolean running = false;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -44,13 +45,16 @@ public class ForegroundService extends Service {
                     updateForegroundNotification();
                 }
             } else if (ACTION_UPLOAD_PROGRESS.equals(action)) {
-                String fileName = intent.getStringExtra("fileName");
+                currentUploadFileName = intent.getStringExtra("fileName");
                 int percent = intent.getIntExtra("percent", 0);
                 long loaded = intent.getLongExtra("loaded", 0);
                 long total = intent.getLongExtra("total", 1);
-                updateUploadNotification(fileName, percent, loaded, total, false);
+                updateUploadNotification(currentUploadFileName, percent, loaded, total, false);
             } else if (ACTION_UPLOAD_FINISHED.equals(action)) {
-                updateUploadNotification("", 100, 0, 0, true);
+                if (!currentUploadFileName.isEmpty()) {
+                    updateUploadNotification(currentUploadFileName, 100, 0, 0, true);
+                }
+                currentUploadFileName = "";
             } else if (ACTION_STOP_FOREGROUND.equals(action)) {
                 stopForegroundService();
             }
