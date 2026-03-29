@@ -89,7 +89,6 @@ public class ForegroundService extends Service {
 
         registerReceiver(receiver, filter);
 
-        // 起動直後に確実に通知を表示
         updateForegroundNotification();
     }
 
@@ -97,7 +96,6 @@ public class ForegroundService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = getSystemService(NotificationManager.class);
 
-            // 常駐通知（ストレージ容量）→ DEFAULT に上げて即時表示しやすくする
             NotificationChannel foregroundChannel = new NotificationChannel(
                     FOREGROUND_CHANNEL_ID,
                     "365Cloud 常駐通知",
@@ -105,7 +103,6 @@ public class ForegroundService extends Service {
             foregroundChannel.setDescription("ストレージ容量を常時表示");
             nm.createNotificationChannel(foregroundChannel);
 
-            // アップロード通知（スワイプで消せる）
             NotificationChannel uploadChannel = new NotificationChannel(
                     UPLOAD_CHANNEL_ID,
                     "365Cloud アップロード通知",
@@ -141,7 +138,6 @@ public class ForegroundService extends Service {
                 .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);
 
-        // Android 13+ で起動直後のForeground通知を確実に表示させる
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE);
         }
