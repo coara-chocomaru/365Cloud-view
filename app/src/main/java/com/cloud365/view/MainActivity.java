@@ -684,7 +684,6 @@ public class MainActivity extends AppCompatActivity {
         public void sendStorageInfo(String info) {
             if (isFinishing()) return;
             broadcastStorageUpdate(info);
-            broadcastStorageUpdate(storage);
         }
 
         @JavascriptInterface
@@ -725,7 +724,6 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void deleteCompleted() {
-            broadcastStorageUpdate(storage);
             if (isFinishing()) return;
             Intent i = new Intent(ForegroundService.ACTION_DELETE_COMPLETED);
             sendBroadcastToService(i);
