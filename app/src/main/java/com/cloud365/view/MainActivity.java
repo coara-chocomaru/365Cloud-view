@@ -721,5 +721,12 @@ public class MainActivity extends AppCompatActivity {
             Intent i = new Intent(ForegroundService.ACTION_UPLOAD_FINISHED);
             sendBroadcastToService(i);
         }
+
+        @JavascriptInterface
+        public void deleteCompleted() {
+            if (isFinishing()) return;
+            Intent i = new Intent(ForegroundService.ACTION_DELETE_COMPLETED);
+            sendBroadcastToService(i);
+        }
     }
 }
