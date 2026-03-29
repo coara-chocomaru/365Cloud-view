@@ -24,11 +24,9 @@ public class ForegroundService extends Service {
     public static final String ACTION_UPLOAD_FINISHED = "com.cloud365.view.action.UPLOAD_FINISHED";
     public static final String ACTION_DELETE_COMPLETED = "com.cloud365.view.action.DELETE_COMPLETED";
 
-    private static final int FOREGROUND_NOTIFICATION_ID = 4201;
-    private static final int UPLOAD_NOTIFICATION_ID = 4202;
-
-    private static final String FOREGROUND_CHANNEL_ID = "cloud365_foreground_channel";
-    private static final String UPLOAD_CHANNEL_ID = "cloud365_upload_channel";
+    private static final int NOTIFICATION_ID = 4201;
+    private static final String CHANNEL_ID = "cloud365_service_channel";
+    private static final String CHANNEL_NAME = "365Cloud Service";
 
     private String storageInfo = "使用容量: -- / --";
     private String uploadFileName = null;
@@ -48,7 +46,7 @@ public class ForegroundService extends Service {
                 String s = intent.getStringExtra("storageInfo");
                 if (s != null) {
                     storageInfo = s;
-                    updateForegroundNotification();
+                    updateNotification();
                 }
             } else if (ACTION_UPLOAD_PROGRESS.equals(action)) {
                 uploadFileName = intent.getStringExtra("fileName");
@@ -56,19 +54,16 @@ public class ForegroundService extends Service {
                 uploadLoaded = intent.getLongExtra("loaded", 0);
                 uploadTotal = intent.getLongExtra("total", 1);
                 isUploading = true;
-                updateUploadNotification(false);
+                updateNotification();
             } else if (ACTION_UPLOAD_FINISHED.equals(action)) {
-                if (uploadFileName != null) {
-                    updateUploadNotification(true);
-                }
                 isUploading = false;
                 uploadFileName = null;
                 uploadPercent = 0;
                 uploadLoaded = 0;
                 uploadTotal = 0;
-                updateForegroundNotification();
+                updateNotification();
             } else if (ACTION_DELETE_COMPLETED.equals(action)) {
-                updateForegroundNotification();
+                updateNotification();
             } else if (ACTION_STOP_FOREGROUND.equals(action)) {
                 stopForegroundService();
             }
@@ -78,7 +73,7 @@ public class ForegroundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        createNotificationChannels();
+        createNotificationChannel();
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_STORAGE_UPDATE);
@@ -88,26 +83,20 @@ public class ForegroundService extends Service {
         filter.addAction(ACTION_STOP_FOREGROUND);
 
         registerReceiver(receiver, filter);
-        updateForegroundNotification();
+        updateNotification();
     }
 
-    private void createNotificationChannels() {
+    private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = CHANNEL_NAME;
+            String description = "365Cloud foreground service";
+            int importance = NotificationManager.IMPORTANCE_LOW;
+
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
             NotificationManager nm = getSystemService(NotificationManager.class);
-
-            NotificationChannel foregroundChannel = new NotificationChannel(
-                    FOREGROUND_CHANNEL_ID,
-                    "365Cloud 常駐通知",
-                    NotificationManager.IMPORTANCE_LOW);
-            foregroundChannel.setDescription("ストレージ容量を表示する常駐通知");
-            nm.createNotificationChannel(foregroundChannel);
-
-            NotificationChannel uploadChannel = new NotificationChannel(
-                    UPLOAD_CHANNEL_ID,
-                    "365Cloud アップロード通知",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            uploadChannel.setDescription("アップロード進行状況と完了通知");
-            nm.createNotificationChannel(uploadChannel);
+            if (nm != null) nm.createNotificationChannel(channel);
         }
     }
 
@@ -122,67 +111,43 @@ public class ForegroundService extends Service {
         return String.format("%.1f %s", (double) bytes, units[i]);
     }
 
-    private void updateForegroundNotification() {
+    private void updateNotification() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                ? PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
-                : PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        PendingIntent pendingIntent;
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+        } else {
+            pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("365Cloud")
-                .setContentText(storageInfo)
                 .setSmallIcon(android.R.drawable.ic_menu_save)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setProgress(0, 0, false);
+                .setPriority(NotificationCompat.PRIORITY_LOW);
+
+        if (isUploading && uploadFileName != null) {
+            String sizeText = uploadTotal > 0 ? formatSize(uploadLoaded) + " / " + formatSize(uploadTotal) : "";
+            builder.setContentText(uploadFileName + " (" + uploadPercent + "%)" + (sizeText.isEmpty() ? "" : " - " + sizeText));
+            builder.setProgress(100, uploadPercent, false);
+        } else {
+            builder.setContentText(storageInfo);
+            builder.setProgress(0, 0, false);
+        }
 
         Notification notification = builder.build();
 
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) {
-            nm.notify(FOREGROUND_NOTIFICATION_ID, notification);
+            nm.notify(NOTIFICATION_ID, notification);
         }
 
         if (!running) {
-            startForeground(FOREGROUND_NOTIFICATION_ID, notification);
+            startForeground(NOTIFICATION_ID, notification);
             running = true;
-        }
-    }
-
-    private void updateUploadNotification(boolean completed) {
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                ? PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
-                : PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, UPLOAD_CHANNEL_ID)
-                .setContentIntent(pendingIntent)
-                .setOnlyAlertOnce(true)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-        if (completed) {
-            builder.setContentTitle("365Cloud")
-                    .setContentText(uploadFileName + " のアップロードが完了しました")
-                    .setSmallIcon(android.R.drawable.ic_menu_save)
-                    .setOngoing(false)
-                    .setAutoCancel(true);
-        } else {
-            String sizeText = uploadTotal > 0 ? formatSize(uploadLoaded) + " / " + formatSize(uploadTotal) : "";
-            builder.setContentTitle("アップロード中")
-                    .setContentText(uploadFileName + " (" + uploadPercent + "%)" + (sizeText.isEmpty() ? "" : " - " + sizeText))
-                    .setSmallIcon(android.R.drawable.ic_menu_upload)
-                    .setOngoing(false)
-                    .setAutoCancel(false)
-                    .setProgress(100, uploadPercent, false);
-        }
-
-        Notification notification = builder.build();
-
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm != null) {
-            nm.notify(UPLOAD_NOTIFICATION_ID, notification);
         }
     }
 
@@ -204,7 +169,7 @@ public class ForegroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && ACTION_START_FOREGROUND.equals(intent.getAction())) {
-            updateForegroundNotification();
+            updateNotification();
         }
         return START_NOT_STICKY;
     }
@@ -224,8 +189,7 @@ public class ForegroundService extends Service {
 
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) {
-            nm.cancel(FOREGROUND_NOTIFICATION_ID);
-            nm.cancel(UPLOAD_NOTIFICATION_ID);
+            nm.cancel(NOTIFICATION_ID);
         }
 
         super.onDestroy();
