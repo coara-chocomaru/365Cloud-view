@@ -748,8 +748,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         fileProgress.set(fileName, fileInfo);
                     }
                     updateGlobalProgress();
+                    // ここでAndroidに安定した通知を送る（ファイル名＋進行％＋サイズ）
                     if (window.Android && typeof window.Android.uploadProgress === 'function') {
-                        window.Android.uploadProgress(fileName, Math.round(percent));
+                        const loaded = Math.round(fileInfo ? fileInfo.uploaded : 0);
+                        const total = Math.round(fileInfo ? fileInfo.total : 0);
+                        window.Android.uploadProgress(fileName, Math.round(percent), loaded, total);
                     }
                 };
                 const fileOnCompleteCallback = (fileName, success, message) => {
