@@ -88,6 +88,7 @@ public class ForegroundService extends Service {
         filter.addAction(ACTION_STOP_FOREGROUND);
 
         registerReceiver(receiver, filter);
+
         updateForegroundNotification();
     }
 
@@ -95,19 +96,19 @@ public class ForegroundService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = getSystemService(NotificationManager.class);
 
-            NotificationChannel foreground = new NotificationChannel(
+            NotificationChannel foregroundChannel = new NotificationChannel(
                     FOREGROUND_CHANNEL_ID,
                     "365Cloud 常駐通知",
-                    NotificationManager.IMPORTANCE_LOW);
-            foreground.setDescription("ストレージ容量を表示する常駐通知");
-            nm.createNotificationChannel(foreground);
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            foregroundChannel.setDescription("ストレージ容量を常時表示");
+            nm.createNotificationChannel(foregroundChannel);
 
-            NotificationChannel upload = new NotificationChannel(
+            NotificationChannel uploadChannel = new NotificationChannel(
                     UPLOAD_CHANNEL_ID,
                     "365Cloud アップロード通知",
                     NotificationManager.IMPORTANCE_DEFAULT);
-            upload.setDescription("アップロード進行状況と完了通知（スワイプで消せる）");
-            nm.createNotificationChannel(upload);
+            uploadChannel.setDescription("アップロード進行状況と完了通知");
+            nm.createNotificationChannel(uploadChannel);
         }
     }
 
@@ -124,9 +125,9 @@ public class ForegroundService extends Service {
 
     private void updateForegroundNotification() {
         Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ?
-                PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE) :
-                PendingIntent.getActivity(this, 0, intent, 0);
+        PendingIntent pendingIntent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                ? PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+                : PendingIntent.getActivity(this, 0, intent, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
                 .setContentTitle("365Cloud")
@@ -135,13 +136,18 @@ public class ForegroundService extends Service {
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setProgress(0, 0, false);
+                .setPriority(NotificationCompat.PRIORITY_LOW);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE);
+        }
 
         Notification notification = builder.build();
 
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm != null) nm.notify(FOREGROUND_NOTIFICATION_ID, notification);
+        if (nm != null) {
+            nm.notify(FOREGROUND_NOTIFICATION_ID, notification);
+        }
 
         if (!running) {
             startForeground(FOREGROUND_NOTIFICATION_ID, notification);
@@ -151,9 +157,9 @@ public class ForegroundService extends Service {
 
     private void updateUploadNotification(boolean completed) {
         Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ?
-                PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE) :
-                PendingIntent.getActivity(this, 0, intent, 0);
+        PendingIntent pendingIntent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                ? PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+                : PendingIntent.getActivity(this, 0, intent, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, UPLOAD_CHANNEL_ID)
                 .setContentIntent(pendingIntent)
@@ -179,7 +185,9 @@ public class ForegroundService extends Service {
         Notification notification = builder.build();
 
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm != null) nm.notify(UPLOAD_NOTIFICATION_ID, notification);
+        if (nm != null) {
+            nm.notify(UPLOAD_NOTIFICATION_ID, notification);
+        }
     }
 
     private void stopForegroundService() {
