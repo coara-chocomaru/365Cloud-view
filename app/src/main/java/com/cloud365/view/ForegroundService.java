@@ -55,6 +55,7 @@ public class ForegroundService extends Service {
                     updateUploadNotification(currentUploadFileName, 100, 0, 0, true);
                 }
                 currentUploadFileName = "";
+                updateForegroundNotification();
             } else if (ACTION_STOP_FOREGROUND.equals(action)) {
                 stopForegroundService();
             }
