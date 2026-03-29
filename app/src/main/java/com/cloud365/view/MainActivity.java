@@ -633,6 +633,13 @@ public class MainActivity extends AppCompatActivity {
                 cookieManager.setCookie(BASE_URL, savedCookies);
                 cookieManager.flush();
             }
+            // settings.htmlから戻った時も即座にストレージ容量を通知
+            webView.evaluateJavascript("(function(){var e=document.getElementById('storage-info'); if(e) return e.innerText; if(typeof getStorageInfo === 'function') return getStorageInfo(); return null; })();", value -> {
+                if (value != null && !"null".equals(value)) {
+                    String storage = value.replaceAll("^\\\"|\\\"$", "").replace("\\\\n", "\n");
+                    broadcastStorageUpdate(storage);
+                }
+            });
         }
         startAutoRefreshIfNeeded();
     }
