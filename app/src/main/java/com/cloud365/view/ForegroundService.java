@@ -88,6 +88,7 @@ public class ForegroundService extends Service {
         filter.addAction(ACTION_STOP_FOREGROUND);
 
         registerReceiver(receiver, filter);
+
         updateForegroundNotification();
     }
 
@@ -136,7 +137,7 @@ public class ForegroundService extends Service {
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setProgress(0, 0, false);
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             builder.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE);
