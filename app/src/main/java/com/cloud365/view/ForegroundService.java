@@ -31,6 +31,8 @@ public class ForegroundService extends Service {
     private String storageInfo = "使用容量: -- / --";
     private String uploadFileName = null;
     private int uploadPercent = 0;
+    private long uploadLoaded = 0;
+    private long uploadTotal = 0;
     private boolean isUploading = false;
     private boolean running = false;
 
@@ -47,16 +49,18 @@ public class ForegroundService extends Service {
                     updateNotification();
                 }
             } else if (ACTION_UPLOAD_PROGRESS.equals(action)) {
-                String file = intent.getStringExtra("fileName");
-                int percent = intent.getIntExtra("percent", 0);
-                if (file != null) uploadFileName = file;
-                uploadPercent = percent;
+                uploadFileName = intent.getStringExtra("fileName");
+                uploadPercent = intent.getIntExtra("percent", 0);
+                uploadLoaded = intent.getLongExtra("loaded", 0);
+                uploadTotal = intent.getLongExtra("total", 1);
                 isUploading = true;
                 updateNotification();
             } else if (ACTION_UPLOAD_FINISHED.equals(action)) {
                 isUploading = false;
                 uploadFileName = null;
                 uploadPercent = 0;
+                uploadLoaded = 0;
+                uploadTotal = 0;
                 updateNotification();
             } else if (ACTION_DELETE_COMPLETED.equals(action)) {
                 updateNotification();
@@ -96,6 +100,17 @@ public class ForegroundService extends Service {
         }
     }
 
+    private String formatSize(long bytes) {
+        if (bytes == 0) return "0 B";
+        final String[] units = {"B", "KB", "MB", "GB"};
+        int i = 0;
+        while (bytes >= 1024 && i < units.length - 1) {
+            bytes /= 1024;
+            i++;
+        }
+        return String.format("%.1f %s", (double) bytes, units[i]);
+    }
+
     private void updateNotification() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent;
@@ -115,7 +130,8 @@ public class ForegroundService extends Service {
                 .setPriority(NotificationCompat.PRIORITY_LOW);
 
         if (isUploading && uploadFileName != null) {
-            builder.setContentText(uploadFileName + " (" + uploadPercent + "%)");
+            String sizeText = uploadTotal > 0 ? formatSize(uploadLoaded) + " / " + formatSize(uploadTotal) : "";
+            builder.setContentText(uploadFileName + " (" + uploadPercent + "%)" + (sizeText.isEmpty() ? "" : " - " + sizeText));
             builder.setProgress(100, uploadPercent, false);
         } else {
             builder.setContentText(storageInfo);
