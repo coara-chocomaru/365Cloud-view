@@ -159,8 +159,7 @@ public class MainActivity extends AppCompatActivity {
 
                 saveCookies();
 
-                view.evaluateJavascript("(function(){\nif(window._cloud365Injected) return;\nwindow._cloud365Injected = true;\nfunction sendStorageInfoIfExists(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      var text = (typeof el.innerText !== 'undefined')? el.innerText : (el.textContent||'');\n      if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(text);\n      return true;\n    }\n    if (typeof getStorageInfo === 'function'){\n      try{\n        var val = getStorageInfo();\n        if(val && window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(String(val));\n        return true;\n      }catch(e){}\n    }\n  }catch(e){}\n  return false;\n}\nfunction observeStorage(){\n  try{\n    var el = document.getElementById('storage-info') || document.querySelector('[data-storage-info]');\n    if(el){\n      try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){}\n      var mo = new MutationObserver(function(){ try{ if(window.AndroidAppBridge && AndroidAppBridge.sendStorageInfo) AndroidAppBridge.sendStorageInfo(el.innerText||el.textContent||''); }catch(e){} });\n      mo.observe(el,{childList:true,characterData:true,subtree:true});\n      return;\n    }\n  }catch(e){}\n  var tries = 0;\n  var maxTries = 30;\n  var poll = setInterval(function(){\n    tries++;\n    if(sendStorageInfoIfExists() || tries>=maxTries) clearInterval(poll);\n  },1000);\n}\nvar deselectBtn=document.querySelector('.nav-item[data-target=\"files\"]');if(deselectBtn){deselectBtn.addEventListener('click',function(){try{var fileInput=document.getElementById('file-upload')||document.querySelector('input[type=\"file\"]');var hasFiles=fileInput&&fileInput.files&&fileInput.files.length>0;if(hasFiles){if(window.AndroidAppBridge&&AndroidAppBridge.fileDeselected)AndroidAppBridge.fileDeselected();}else{if(window.AndroidAppBridge&&AndroidAppBridge.fileNotSelected)AndroidAppBridge.fileNotSelected();}}catch(e){}},true);}document.getElementById('upload-button').addEventListener('click',function(){var fileInput=document.getElementById('file-upload');if(!fileInput||!fileInput.files||fileInput.files.length===0){if(window.AndroidAppBridge&&AndroidAppBridge.showToast)AndroidAppBridge.showToast('ファイルを選択してください');}},true);})();", null);
-
+                // settings.htmlでも必ずstorage-infoを取得して通知
                 view.evaluateJavascript("(function(){var e=document.getElementById('storage-info'); if(e) return e.innerText; if(typeof getStorageInfo === 'function') return getStorageInfo(); return null; })();", value -> {
                     if (value != null && !"null".equals(value)) {
                         String storage = value.replaceAll("^\\\"|\\\"$", "").replace("\\\\n", "\n");
@@ -633,6 +632,13 @@ public class MainActivity extends AppCompatActivity {
                 cookieManager.setCookie(BASE_URL, savedCookies);
                 cookieManager.flush();
             }
+            // settings.htmlから戻った時も即座にストレージ更新
+            webView.evaluateJavascript("(function(){var e=document.getElementById('storage-info'); if(e) return e.innerText; if(typeof getStorageInfo === 'function') return getStorageInfo(); return null; })();", value -> {
+                if (value != null && !"null".equals(value)) {
+                    String storage = value.replaceAll("^\\\"|\\\"$", "").replace("\\\\n", "\n");
+                    broadcastStorageUpdate(storage);
+                }
+            });
         }
         startAutoRefreshIfNeeded();
     }
