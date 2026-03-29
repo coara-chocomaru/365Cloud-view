@@ -24,15 +24,11 @@ public class ForegroundService extends Service {
     public static final String ACTION_UPLOAD_FINISHED = "com.cloud365.view.action.UPLOAD_FINISHED";
 
     private static final int NOTIFICATION_ID = 4201;
+    private static final int UPLOAD_NOTIFICATION_ID = 4202;
     private static final String CHANNEL_ID = "cloud365_service_channel";
     private static final String CHANNEL_NAME = "365Cloud Service";
 
     private String storageInfo = "使用容量: -- / --";
-    private String uploadFileName = null;
-    private int uploadPercent = 0;
-    private long uploadLoaded = 0;
-    private long uploadTotal = 0;
-    private boolean isUploading = false;
     private boolean running = false;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -45,22 +41,16 @@ public class ForegroundService extends Service {
                 String s = intent.getStringExtra("storageInfo");
                 if (s != null) {
                     storageInfo = s;
-                    if (!isUploading) updateNotification();
+                    updateForegroundNotification();
                 }
             } else if (ACTION_UPLOAD_PROGRESS.equals(action)) {
-                uploadFileName = intent.getStringExtra("fileName");
-                uploadPercent = intent.getIntExtra("percent", 0);
-                uploadLoaded = intent.getLongExtra("loaded", 0);
-                uploadTotal = intent.getLongExtra("total", 1);
-                isUploading = true;
-                updateNotification();
+                String fileName = intent.getStringExtra("fileName");
+                int percent = intent.getIntExtra("percent", 0);
+                long loaded = intent.getLongExtra("loaded", 0);
+                long total = intent.getLongExtra("total", 1);
+                updateUploadNotification(fileName, percent, loaded, total, false);
             } else if (ACTION_UPLOAD_FINISHED.equals(action)) {
-                isUploading = false;
-                uploadFileName = null;
-                uploadPercent = 0;
-                uploadLoaded = 0;
-                uploadTotal = 0;
-                updateNotification();
+                updateUploadNotification("", 100, 0, 0, true);
             } else if (ACTION_STOP_FOREGROUND.equals(action)) {
                 stopForegroundService();
             }
@@ -106,7 +96,7 @@ public class ForegroundService extends Service {
         return String.format("%.1f %s", (double) bytes, units[i]);
     }
 
-    private void updateNotification() {
+    private void updateForegroundNotification() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent;
 
@@ -118,20 +108,13 @@ public class ForegroundService extends Service {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("365Cloud")
+                .setContentText(storageInfo)
                 .setSmallIcon(android.R.drawable.ic_menu_save)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
-                .setPriority(NotificationCompat.PRIORITY_LOW);
-
-        if (isUploading && uploadFileName != null) {
-            String sizeText = uploadTotal > 0 ? formatSize(uploadLoaded) + " / " + formatSize(uploadTotal) : "";
-            builder.setContentText(uploadFileName + " (" + uploadPercent + "%)" + (sizeText.isEmpty() ? "" : " - " + sizeText));
-            builder.setProgress(100, uploadPercent, false);
-        } else {
-            builder.setContentText(storageInfo);
-            builder.setProgress(0, 0, false);
-        }
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setProgress(0, 0, false);
 
         Notification notification = builder.build();
 
@@ -143,6 +126,45 @@ public class ForegroundService extends Service {
         if (!running) {
             startForeground(NOTIFICATION_ID, notification);
             running = true;
+        }
+    }
+
+    private void updateUploadNotification(String fileName, int percent, long loaded, long total, boolean completed) {
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+        } else {
+            pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentIntent(pendingIntent)
+                .setOnlyAlertOnce(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        if (completed) {
+            builder.setContentTitle("365Cloud")
+                    .setContentText(fileName + " のアップロードが完了しました")
+                    .setSmallIcon(android.R.drawable.ic_menu_save)
+                    .setOngoing(false)
+                    .setAutoCancel(true);
+        } else {
+            String sizeText = total > 0 ? formatSize(loaded) + " / " + formatSize(total) : "";
+            builder.setContentTitle("アップロード中")
+                    .setContentText(fileName + " (" + percent + "%)" + (sizeText.isEmpty() ? "" : " - " + sizeText))
+                    .setSmallIcon(android.R.drawable.ic_menu_upload)
+                    .setOngoing(false)
+                    .setAutoCancel(false)
+                    .setProgress(100, percent, false);
+        }
+
+        Notification notification = builder.build();
+
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) {
+            nm.notify(UPLOAD_NOTIFICATION_ID, notification);
         }
     }
 
@@ -164,7 +186,7 @@ public class ForegroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && ACTION_START_FOREGROUND.equals(intent.getAction())) {
-            updateNotification();
+            updateForegroundNotification();
         }
         return START_NOT_STICKY;
     }
@@ -185,6 +207,7 @@ public class ForegroundService extends Service {
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) {
             nm.cancel(NOTIFICATION_ID);
+            nm.cancel(UPLOAD_NOTIFICATION_ID);
         }
 
         super.onDestroy();
