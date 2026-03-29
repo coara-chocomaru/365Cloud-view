@@ -703,14 +703,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
-        public void uploadProgress(String fileName, int percent) {
-            if (isFinishing()) return;
-            Intent i = new Intent(ForegroundService.ACTION_UPLOAD_PROGRESS);
-            i.putExtra("fileName", fileName);
-            i.putExtra("percent", percent);
-            sendBroadcastToService(i);
+        public void uploadProgress(String fileName, int percent, long size) {
+               Intent i = new Intent(ForegroundService.ACTION_UPLOAD_PROGRESS);
+               i.putExtra("fileName", fileName);
+               i.putExtra("percent", percent);
+               i.putExtra("size", size);
+               sendBroadcastToService(i);
         }
-
         @JavascriptInterface
         public void uploadComplete(String fileName, boolean success, String message) {
             if (isFinishing()) return;
