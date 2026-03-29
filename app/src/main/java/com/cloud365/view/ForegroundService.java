@@ -30,7 +30,10 @@ public class ForegroundService extends Service {
     private static final String CHANNEL_NAME = "365Cloud Service";
 
     private String storageInfo = "使用容量: -- / --";
-    private String uploadStatus = "";
+    private String currentFileName = "";
+    private long currentFileSize = 0;
+    private int currentProgress = 0;
+    private boolean isUploading = false;
     private boolean running = false;
     private Handler handler;
 
@@ -42,27 +45,45 @@ public class ForegroundService extends Service {
 
             if (ACTION_STORAGE_UPDATE.equals(action)) {
                 String s = intent.getStringExtra("storageInfo");
-                if (s != null) {
+                if (s != null && !s.isEmpty()) {
                     storageInfo = s;
-                    updateNotification();
                 }
+                updateNotification();
+
             } else if (ACTION_UPLOAD_PROGRESS.equals(action)) {
                 String fileName = intent.getStringExtra("fileName");
                 int percent = intent.getIntExtra("percent", 0);
-                uploadStatus = "アップロード中: " + fileName + " " + percent + "%";
+                long size = intent.getLongExtra("size", 0);
+
+                if (fileName != null && !fileName.isEmpty()) {
+                    currentFileName = fileName;
+                    currentFileSize = size > 0 ? size : currentFileSize;
+                }
+                currentProgress = percent;
+                isUploading = true;
                 updateNotification();
+
             } else if (ACTION_UPLOAD_COMPLETE.equals(action)) {
                 String fileName = intent.getStringExtra("fileName");
                 boolean success = intent.getBooleanExtra("success", false);
-                uploadStatus = success ? "アップロード完了: " + fileName : "アップロード失敗: " + fileName;
-                updateNotification();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        uploadStatus = "";
+
+                isUploading = false;
+                if (success) {
+                    currentProgress = 100;
+                    updateNotification();
+                    handler.postDelayed(() -> {
+                        currentFileName = "";
+                        currentProgress = 0;
                         updateNotification();
-                    }
-                }, 5000);
+                    }, 4000);
+                } else {
+                    updateNotification();
+                    handler.postDelayed(() -> {
+                        currentFileName = "";
+                        currentProgress = 0;
+                        updateNotification();
+                    }, 6000);
+                }
             } else if (ACTION_STOP_FOREGROUND.equals(action)) {
                 stopForegroundService();
             }
@@ -86,13 +107,9 @@ public class ForegroundService extends Service {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = CHANNEL_NAME;
-            String description = "365Cloud foreground service";
-            int importance = NotificationManager.IMPORTANCE_LOW;
-
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
-            channel.setDescription(description);
-
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription("365Cloud アップロード通知");
             NotificationManager nm = getSystemService(NotificationManager.class);
             if (nm != null) nm.createNotificationChannel(channel);
         }
@@ -100,27 +117,33 @@ public class ForegroundService extends Service {
 
     private void updateNotification() {
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
-        } else {
-            pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        }
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ?
+                        PendingIntent.FLAG_IMMUTABLE : 0);
 
         String contentText = storageInfo;
-        if (!uploadStatus.isEmpty()) {
-            contentText = storageInfo + "\n" + uploadStatus;
+
+        if (isUploading && !currentFileName.isEmpty()) {
+            String sizeStr = currentFileSize > 0 ? " (" + formatSize(currentFileSize) + ")" : "";
+            contentText += "\n" + currentFileName + sizeStr + "  " + currentProgress + "%";
+        } else if (!currentFileName.isEmpty()) {
+            contentText += "\n" + (currentProgress == 100 ? " 完了: " : "失敗: ") + currentFileName;
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("365Cloud")
                 .setContentText(contentText)
-                .setSmallIcon(android.R.drawable.ic_menu_save)
+                .setSmallIcon(android.R.drawable.ic_menu_upload)
                 .setContentIntent(pendingIntent)
-                .setOngoing(true)
+                .setOngoing(isUploading)
                 .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);
+
+        if (isUploading) {
+            builder.setProgress(100, currentProgress, false);
+        } else {
+            builder.setProgress(0, 0, false);
+        }
 
         Notification notification = builder.build();
 
@@ -133,6 +156,18 @@ public class ForegroundService extends Service {
             startForeground(NOTIFICATION_ID, notification);
             running = true;
         }
+    }
+
+    private String formatSize(long bytes) {
+        if (bytes <= 0) return "";
+        final String[] units = {"B", "KB", "MB", "GB"};
+        int digit = 0;
+        double size = bytes;
+        while (size >= 1024 && digit < units.length - 1) {
+            size /= 1024;
+            digit++;
+        }
+        return String.format("%.1f %s", size, units[digit]);
     }
 
     private void stopForegroundService() {
@@ -168,17 +203,14 @@ public class ForegroundService extends Service {
     public void onDestroy() {
         try {
             unregisterReceiver(receiver);
-        } catch (Exception e) {
-        }
+        } catch (Exception ignored) {}
 
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
 
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm != null) {
-            nm.cancel(NOTIFICATION_ID);
-        }
+        if (nm != null) nm.cancel(NOTIFICATION_ID);
 
         super.onDestroy();
     }
