@@ -68,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Runnable autoRefreshRunnable;
     private boolean isAutoRefreshRunning = false;
-    private boolean hasInitialReloaded = false;
-    private boolean hasBackReloaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,15 +176,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 startAutoRefreshIfNeeded();
-
-                if (url != null && url.contains("index.html") && !hasInitialReloaded) {
-                    hasInitialReloaded = true;
-                    handler.post(() -> {
-                        if (webView != null && !isFinishing()) {
-                            webView.reload();
-                        }
-                    });
-                }
             }
 
             @Override
@@ -385,19 +374,12 @@ public class MainActivity extends AppCompatActivity {
                         webView.goBack();
                     });
         } else {
-            if (!hasBackReloaded) {
-                hasBackReloaded = true;
-                if (webView != null) {
-                    webView.reload();
-                }
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastBackPressTime < DOUBLE_PRESS_INTERVAL) {
+                finish();
             } else {
-                long currentTime = System.currentTimeMillis();
-                if (currentTime - lastBackPressTime < DOUBLE_PRESS_INTERVAL) {
-                    finish();
-                } else {
-                    lastBackPressTime = currentTime;
-                    Toast.makeText(this, "もう一度押すと終了します", Toast.LENGTH_SHORT).show();
-                }
+                lastBackPressTime = currentTime;
+                Toast.makeText(this, "もう一度押すと終了します", Toast.LENGTH_SHORT).show();
             }
         }
     }
