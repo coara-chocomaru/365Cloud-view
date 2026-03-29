@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
 
         setupWebView();
         loadMainPage();
-        broadcastStorageUpdate(storage);
     }
 
     private void setupWebView() {
@@ -685,6 +684,7 @@ public class MainActivity extends AppCompatActivity {
         public void sendStorageInfo(String info) {
             if (isFinishing()) return;
             broadcastStorageUpdate(info);
+            broadcastStorageUpdate(storage);
         }
 
         @JavascriptInterface
