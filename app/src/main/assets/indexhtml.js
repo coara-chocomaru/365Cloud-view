@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // UI要素の取得
     const storageInfoElement = document.getElementById('storage-info');
     const fileListElement = document.getElementById('file-list');
     const currentFolderDisplaySidebar = document.getElementById('current-folder-display');
@@ -11,21 +10,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('file-upload');
     const dropArea = document.getElementById('file-list-container');
     const dropGuide = dropArea.querySelector('.drop-guide');
-
-    // General Message Modal
     const messageModal = document.getElementById('message-modal');
     const messageModalTitle = document.getElementById('message-modal-title');
     const messageModalText = document.getElementById('message-modal-text');
     const closeMessageModalButton = document.getElementById('close-message-modal-button');
     const messageModalOkButton = document.getElementById('message-modal-ok-button');
-
-    // 共有リンク表示モーダル
     const shareModal = document.getElementById('share-modal');
     const shareLinkInput = document.getElementById('share-link-input');
     const copyShareLinkButton = document.getElementById('copy-share-link-button');
     const closeShareModalButton = document.getElementById('close-share-modal-button');
-
-    // 共有オプションモーダル
     const shareOptionsModal = document.getElementById('share-options-modal');
     const shareOptionsCloseButton = shareOptionsModal.querySelector('.close-button');
     const shareOptionsFileName = shareOptionsModal.querySelector('.share-file-name');
@@ -36,54 +29,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const shareOptionsPasswordInput = document.getElementById('share-password-input');
     const shareOptionsErrorMessage = shareOptionsModal.querySelector('.modal-error-message');
     const createShareLinkButton = document.getElementById('create-share-link-button');
-
-    // リサイズ関連要素
     const sidebar = document.querySelector('.sidebar');
     const resizer = document.querySelector('.resizer');
-
     let isResizing = false;
     let startX;
     let startWidth;
-
-    // ダークモード関連
     const darkModeToggle = document.getElementById('dark-mode-toggle');
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     const mobileFab = document.getElementById('mobile-fab');
     const mobileNavItems = document.querySelectorAll('.nav-item');
     let currentFolder = '';
-
-    // Dragging variables
     let isDragging = false;
     let currentDraggableModal = null;
     let dragOffsetX, dragOffsetY;
-
-    // Get reference to the content of the message modal
     const messageModalContent = messageModal.querySelector('.modal-content');
-
-    // Mousedown event listener for the message modal content
     messageModalContent.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return; // Only left click
+        if (e.button !== 0) return;
         isDragging = true;
         currentDraggableModal = messageModalContent;
         dragOffsetX = e.clientX - currentDraggableModal.getBoundingClientRect().left;
         dragOffsetY = e.clientY - currentDraggableModal.getBoundingClientRect().top;
         currentDraggableModal.style.cursor = 'grabbing';
-        document.body.style.userSelect = 'none'; // Prevent text selection during drag
+        document.body.style.userSelect = 'none';
     });
-
-    // Global mousemove event listener
     document.addEventListener('mousemove', (e) => {
         if (!isDragging || !currentDraggableModal) return;
-
         const newX = e.clientX - dragOffsetX;
         const newY = e.clientY - dragOffsetY;
-
         currentDraggableModal.style.left = `${newX}px`;
         currentDraggableModal.style.top = `${newY}px`;
     });
-
-    // Global mouseup event listener
     document.addEventListener('mouseup', () => {
         if (isDragging && currentDraggableModal) {
             isDragging = false;
@@ -92,32 +68,29 @@ document.addEventListener('DOMContentLoaded', function() {
             currentDraggableModal = null;
         }
     });
-
     const baseURL = (() => {
         const { protocol, host, pathname } = location;
         const pathSegments = pathname.split('/');
         const basePath = pathSegments.length > 1 && pathSegments[1] !== 'index.html' ? `/${pathSegments[1]}` : '';
         return `${protocol}//${host}${basePath}`;
     })();
-
     async function handleResponse(response) {
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ message: response.statusText }));
-            // isAuthenticatedミドルウェアからの特定のエラーコードをチェック
             if (errorData.code === 'NOT_VERIFIED' || errorData.code === 'NOT_VERIFIED_OR_DISCORD_NOT_LINKED') {
                 window.location.href = `${baseURL}/link-discord.html?status=pending_approval`;
                 const err = new Error('Redirecting to pending approval page.');
-                err.code = errorData.code; // Pass the code
-                throw err; // 以降の処理を停止
+                err.code = errorData.code;
+                throw err;
             }
             if (errorData.code === 'NOT_AUTHENTICATED') {
                 window.location.href = `${baseURL}/login.html`;
                 const err = new Error('Redirecting to login page.');
-                err.code = errorData.code; // Pass the code
-                throw err; // 以降の処理を停止
+                err.code = errorData.code;
+                throw err;
             }
             const err = new Error(errorData.message || `不明なエラー (${response.status})`);
-            err.code = errorData.code; // Pass the code
+            err.code = errorData.code;
             throw err;
         }
         return response.json();
@@ -125,30 +98,23 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleError(error, prefix) {
         const message = error.message || 'サーバーとの通信に失敗しました。';
         console.error(prefix, ':', error);
-        
         if (error.code === 'NOT_AUTHORIZED_FOR_OPERATIONS') {
             updateUI.showModalMessage('操作は許可されていません', message);
         } else {
             updateUI.message(`${prefix}: ${message}`, true);
         }
-        // alert(`${prefix}: ${message}`); // Removed alert as per user request
     }
-
     function updateUserProfileUI(user) {
         if (!user) return;
-
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
             userAvatar.src = `/365Cloud/api/user/avatar?t=${new Date().getTime()}`;
         }
-
         document.getElementById('welcome-message').textContent = `ようこそ、${user.displayName || user.username}さん`;
         const discordStatusDiv = document.getElementById('discord-status');
         const linkButton = document.getElementById('link-discord-button');
-
-        discordStatusDiv.innerHTML = ''; // Clear previous content
+        discordStatusDiv.innerHTML = '';
         const p = document.createElement('p');
-
         if (user.discordAuth && user.discordAuth.id) {
             if (!user.isVerifiedByAdmin) {
                 p.style.color = '#ffb347';
@@ -156,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 linkButton.style.display = 'none';
             } else {
                 p.style.color = '#28a745';
-                p.textContent = `Discord連携済み: ${user.discordAuth.username}`; // username is escaped by textContent
+                p.textContent = `Discord連携済み: ${user.discordAuth.username}`;
                 linkButton.style.display = 'none';
             }
         } else {
@@ -166,24 +132,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         discordStatusDiv.appendChild(p);
     }
-
-    // モバイル専用要素
     const mobileBreadcrumb = document.getElementById('mobile-breadcrumb');
     const mobilePathDisplay = document.getElementById('mobile-path-display');
     const mobileBackBtn = document.getElementById('mobile-back-btn');
     const mobileNewFolderBtn = document.getElementById('mobile-new-folder-btn');
     const appContainer = document.querySelector('.app-container');
-
     const updateUI = {
         currentFolderDisplay: () => {
             const folderPath = currentFolder ? `/${currentFolder}` : '/';
             currentFolderDisplaySidebar.textContent = `現在のフォルダー: ${folderPath}`;
             currentFolderDisplayMain.textContent = `/${currentFolder || ''}`;
-            // モバイル: パンくず更新
             if (mobilePathDisplay) {
-                mobilePathDisplay.textContent = currentFolder
-                    ? currentFolder.split('/').pop()
-                    : 'ホーム';
+                mobilePathDisplay.textContent = currentFolder ? currentFolder.split('/').pop() : 'ホーム';
             }
         },
         message: (message, isError = false) => {
@@ -194,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function() {
         storageInfo: (used, quota) => { storageInfoElement.textContent = `使用容量: ${used} / ${quota}`; },
         backButtonVisibility: () => {
             backButton.style.display = currentFolder ? 'inline-block' : 'none';
-            // モバイル: パンくずバーの表示切替
             if (mobileBreadcrumb && appContainer) {
                 if (currentFolder) {
                     mobileBreadcrumb.classList.add('visible');
@@ -234,8 +193,6 @@ document.addEventListener('DOMContentLoaded', function() {
             messageModalText.textContent = message;
             messageModal.style.display = 'flex';
             document.body.classList.add('modal-open');
-
-            // Center the modal content initially for dragging
             const modalContentRect = messageModalContent.getBoundingClientRect();
             messageModalContent.style.left = `${(window.innerWidth - modalContentRect.width) / 2}px`;
             messageModalContent.style.top = `${(window.innerHeight - modalContentRect.height) / 2}px`;
@@ -245,7 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.remove('modal-open');
         }
     };
-
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -264,22 +220,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const nameRegex = /^[a-zA-Z0-9_.\- ()\u3040-\u309f\u30a0-\u30ff\u4e00-\u9fff]+$/u;
     function isInvalidName(name) { return name === '.' || name === '..' || name.includes('..') || (name.startsWith('.') && name.length > 1); }
     function isRenamingInProgress() { return !!fileListElement.querySelector('.rename-input'); }
-    
     function createButton(text, onClick) {
         const button = document.createElement('button');
         button.textContent = text;
         button.addEventListener('click', onClick);
         return button;
     }
-
     function initDragAndDrop() {
         const items = fileListElement.querySelectorAll('li[data-file-name]');
         const folders = fileListElement.querySelectorAll('li[data-is-directory="true"]');
-
         items.forEach(item => {
             item.draggable = true;
             item.addEventListener('dragstart', (e) => {
-                // Stop drag if a text input is focused (e.g., during rename)
                 if (document.activeElement.tagName === 'INPUT') {
                     e.preventDefault();
                     return;
@@ -288,39 +240,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.dataTransfer.effectAllowed = 'move';
             });
         });
-
         folders.forEach(folder => {
             folder.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 const draggedName = e.dataTransfer.getData('text/plain');
-                // Prevent dropping a folder onto itself or into the folder it's already in.
                 if (folder.dataset.fileName !== draggedName) {
                     folder.classList.add('drag-over-folder');
                 }
             });
-
             folder.addEventListener('dragleave', () => {
                 folder.classList.remove('drag-over-folder');
             });
-
             folder.addEventListener('drop', (e) => {
                 e.preventDefault();
-                e.stopPropagation(); // crucial to stop the main drop zone from firing
+                e.stopPropagation();
                 folder.classList.remove('drag-over-folder');
-
                 const sourceName = e.dataTransfer.getData('text/plain');
                 const destinationPath = folder.dataset.path;
-
-                // Final check to prevent dropping a folder on itself
                 if (sourceName === folder.dataset.fileName) {
                     return;
                 }
-                
                 fileOperations.moveItem(sourceName, destinationPath);
             });
         });
     }
-
     const fileOperations = {
         loadFiles: (folder) => {
             return fetch(`${baseURL}/files?folder=${encodeURIComponent(folder)}`, { credentials: 'include' })
@@ -328,30 +271,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     fileListElement.innerHTML = '';
                     updateUI.storageInfo(data.storageUsed, data.storageQuota);
-
                     if (currentFolder) {
                         const backItem = document.createElement('li');
                         backItem.className = 'folder';
-                        // Make the back button a valid drop target
                         backItem.dataset.isDirectory = 'true';
                         backItem.dataset.path = currentFolder.substring(0, currentFolder.lastIndexOf('/'));
-
                         const isMobile = window.matchMedia('(max-width: 768px)').matches;
                         const nameSpan = document.createElement('span');
                         nameSpan.className = 'item-name';
                         nameSpan.style.cursor = 'pointer';
-
                         const iconSpan = document.createElement('span');
                         iconSpan.className = 'item-icon folder';
                         if (isMobile) {
                             iconSpan.innerHTML = '<i class="fas fa-level-up-alt"></i>';
                         } else {
-                            iconSpan.innerHTML = ''; // 絵文字のみを表示
+                            iconSpan.innerHTML = '';
                         }
                         nameSpan.appendChild(iconSpan);
                         nameSpan.appendChild(document.createTextNode(' ..'));
                         backItem.appendChild(nameSpan);
-
                         nameSpan.addEventListener('click', (e) => {
                             e.stopPropagation();
                             if (isRenamingInProgress()) return;
@@ -360,7 +298,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         fileListElement.appendChild(backItem);
                     }
-
                     data.files.forEach(file => {
                         const listItem = document.createElement('li');
                         listItem.draggable = true;
@@ -368,18 +305,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         listItem.dataset.originalName = file.originalName;
                         listItem.dataset.path = currentFolder ? `${currentFolder}/${file.name}` : file.name;
                         if (file.isDirectory) listItem.dataset.isDirectory = 'true';
-
                         const nameSpan = document.createElement('span');
                         nameSpan.className = 'item-name';
                         nameSpan.style.cursor = 'pointer';
-
                         const iconSpan = document.createElement('span');
                         iconSpan.className = `item-icon ${file.isDirectory ? 'folder' : 'file'}`;
-                        
                         const isMobile = window.matchMedia('(max-width: 768px)').matches;
-
                         if (isMobile) {
-                            // モバイルの場合のみ Font Awesome アイコンを使用
                             let iconHTML = '<i class="fas fa-file"></i>';
                             if (file.isDirectory) {
                                 iconHTML = '<i class="fas fa-folder"></i>';
@@ -392,18 +324,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                             iconSpan.innerHTML = iconHTML;
                         } else {
-                            // PCの場合は innerHTML を空にして CSS の ::before (絵文字) のみを表示
                             iconSpan.innerHTML = '';
                             if (file.type) {
                                 iconSpan.dataset.type = file.type;
                             }
                         }
-                        
                         nameSpan.appendChild(iconSpan);
                         const nameText = document.createElement('span');
                         nameText.textContent = ` ${file.originalName}`;
                         nameSpan.appendChild(nameText);
-
                         if (!file.isDirectory) {
                             const sizeSpan = document.createElement('span');
                             sizeSpan.className = 'item-size';
@@ -411,7 +340,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             nameSpan.appendChild(sizeSpan);
                         }
                         listItem.appendChild(nameSpan);
-
                         nameSpan.addEventListener('click', (e) => {
                             e.stopPropagation();
                             if (isRenamingInProgress()) return;
@@ -428,38 +356,31 @@ document.addEventListener('DOMContentLoaded', function() {
                                 document.body.removeChild(link);
                             }
                         });
-
                         const buttonContainer = document.createElement('div');
                         buttonContainer.className = 'item-actions';
-                        
                         const createActionBtn = (iconClass, title, onClick) => {
                             const btn = document.createElement('button');
                             if (isMobile) {
-                                // モバイル: アイコンのみでシンプルに
                                 btn.innerHTML = `<i class="${iconClass}"></i>`;
                             } else {
-                                // PC: 絶対に以前と同じテキストボタン
                                 btn.textContent = title;
                             }
                             btn.title = title;
                             btn.addEventListener('click', onClick);
                             return btn;
                         };
-
                         if (!file.isDirectory) buttonContainer.appendChild(createActionBtn('fas fa-eye', 'プレビュー', (e) => { e.stopPropagation(); fileOperations.showPreview(file); }));
                         buttonContainer.appendChild(createActionBtn('fas fa-edit', '名前変更', (e) => { e.stopPropagation(); fileOperations.startRename(listItem); }));
                         if (!file.isDirectory) buttonContainer.appendChild(createActionBtn('fas fa-share-alt', '共有', (e) => { e.stopPropagation(); fileOperations.shareFile(file); }));
                         buttonContainer.appendChild(createActionBtn('fas fa-trash-alt', '削除', (e) => { e.stopPropagation(); fileOperations.deleteFile(file.name, file.originalName); }));
-                        
                         listItem.appendChild(buttonContainer);
                         fileListElement.appendChild(listItem);
                     });
-                    
                     updateUI.showDropGuide(fileListElement.children.length === 0);
                     updateUI.backButtonVisibility();
                     updateUI.currentFolderDisplay();
                     updateUI.clearMessage();
-                    initDragAndDrop(); // Re-initialize drag and drop for new elements
+                    initDragAndDrop();
                 })
                 .catch(err => {
                     handleError(err, 'ファイル一覧の取得に失敗しました');
@@ -522,18 +443,14 @@ document.addEventListener('DOMContentLoaded', function() {
             shareOptionsModal.querySelector('input[value="none"]').checked = true;
             createShareLinkButton.disabled = false;
             createShareLinkButton.textContent = '共有リンクを作成';
-            
             shareOptionsModal.style.display = 'flex';
             document.body.classList.add('modal-open');
-
             const createLinkHandler = async () => {
                 shareOptionsErrorMessage.textContent = '';
                 createShareLinkButton.disabled = true;
                 createShareLinkButton.textContent = '作成中...';
-
                 const protectionType = shareOptionsModal.querySelector('input[name="protection"]:checked').value;
                 const protection = { type: protectionType };
-
                 if (protectionType === 'pin') {
                     const pin = shareOptionsPinInput.value;
                     if (!/^\d{4,6}$/.test(pin)) {
@@ -553,7 +470,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     protection.value = password;
                 }
-
                 try {
                     const filePath = currentFolder ? `${currentFolder}/${file.name}` : file.name;
                     const response = await fetch(`${baseURL}/share`, {
@@ -562,13 +478,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         body: JSON.stringify({ file: filePath, protection: protection }),
                         credentials: 'include'
                     });
-
                     const data = await handleResponse(response);
-                    
                     shareOptionsModal.style.display = 'none';
                     shareLinkInput.value = data.shareLink;
                     shareModal.style.display = "flex";
-
                 } catch (error) {
                     shareOptionsErrorMessage.textContent = `エラー: ${error.message}`;
                 } finally {
@@ -609,12 +522,10 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         startRename: (listItem) => {
             if (isRenamingInProgress()) return;
-
             const nameSpan = listItem.querySelector('.item-name');
             const buttonContainer = listItem.querySelector('.item-actions');
             const originalName = listItem.dataset.originalName;
             const originalButtonElements = Array.from(buttonContainer.children);
-
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'rename-input';
@@ -629,11 +540,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     fileOperations.cancelRename(listItem, nameSpan, originalButtonElements);
                 }
             });
-
             nameSpan.replaceWith(input);
             input.focus();
             input.select();
-
             buttonContainer.innerHTML = '';
             const okButton = createButton('OK', (e) => {
                 e.stopPropagation();
@@ -660,11 +569,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 nameSpan.style.cursor = 'pointer';
                 nameSpan.innerHTML = `<span class="item-icon ${listItem.dataset.isDirectory ? 'folder' : 'file'}"></span> ${listItem.dataset.originalName}`;
                 if (!listItem.dataset.isDirectory) { nameSpan.innerHTML += `<span class="item-size">${listItem.querySelector('.item-size')?.textContent || ''}</span>`; }
-                
                 fileOperations.cancelRename(listItem, nameSpan, originalButtonElements);
                 return;
             }
-
             fetch(`${baseURL}/rename`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -700,12 +607,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }).catch(err => handleError(err, 'ログアウトに失敗しました'));
         }
     };
-
     const storageOperations = {
-        // 新しい定数を定義
-        CHUNK_SIZE: 5 * 1024 * 1024, // 5MB per chunk
-        CHUNK_UPLOAD_THRESHOLD: 10 * 1024 * 1024, // 10MB Threshold for chunked uploads
-
+        CHUNK_SIZE: 5 * 1024 * 1024,
+        CHUNK_UPLOAD_THRESHOLD: 10 * 1024 * 1024,
         checkStorageBeforeUpload: (files) => {
             return new Promise((resolve, reject) => {
                 fetch(`${baseURL}/storage`, { credentials: 'include' })
@@ -723,23 +627,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     .catch(reject);
             });
         },
-
-        // 既存のuploadFilesロジックを_uploadSingleFileとして分離
         _uploadSingleFile: (file, progressCallback, onCompleteCallback) => {
             const formData = new FormData();
-            formData.append('files', file); // 'files' はサーバー側のmulter設定に合わせる
-
+            formData.append('files', file);
             const xhr = new XMLHttpRequest();
             xhr.open('POST', `${baseURL}/upload-files`, true);
             xhr.withCredentials = true;
-
             xhr.upload.onprogress = (event) => {
                 if (event.lengthComputable) {
                     const percent = (event.loaded / event.total) * 100;
                     progressCallback(file.name, percent);
                 }
             };
-
             xhr.onload = () => {
                 try {
                     const data = JSON.parse(xhr.responseText);
@@ -752,42 +651,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     onCompleteCallback(file.name, false, e.message || 'アップロード処理に失敗しました');
                 }
             };
-
             xhr.onerror = () => {
                 onCompleteCallback(file.name, false, 'ネットワークエラー');
             };
-
             xhr.send(formData);
         },
-
-        // チャンクアップロード用のスケルトン関数 (後で実装)
         _uploadFileInChunks: async (file, progressCallback, onCompleteCallback) => {
-            const fileId = Math.random().toString(36).substring(2) + Date.now().toString(36); // 簡易的なユニークID
+            const fileId = Math.random().toString(36).substring(2) + Date.now().toString(36);
             const totalChunks = Math.ceil(file.size / storageOperations.CHUNK_SIZE);
             let uploadedChunks = 0;
             let currentChunkIndex = 0;
-
             try {
                 while (currentChunkIndex < totalChunks) {
                     const start = currentChunkIndex * storageOperations.CHUNK_SIZE;
                     const end = Math.min(start + storageOperations.CHUNK_SIZE, file.size);
                     const chunk = file.slice(start, end);
-
                     const formData = new FormData();
                     formData.append('chunk', chunk, file.name);
-                    // formData.append('fileId', fileId); // これらはクエリパラメータとして送信
-                    // formData.append('chunkIndex', currentChunkIndex); // これらはクエリパラメータとして送信
                     formData.append('totalChunks', totalChunks);
-                    formData.append('fileName', file.name); // オリジナルファイル名も送信
-
+                    formData.append('fileName', file.name);
                     const xhr = new XMLHttpRequest();
-                    // チャンクアップロード用のAPIエンドポイント '/api/upload-chunk' を使用
-                    // fileId と chunkIndex をクエリパラメータとして追加
                     xhr.open('POST', `${baseURL}/api/upload-chunk?fileId=${fileId}&chunkIndex=${currentChunkIndex}`, true);
                     xhr.withCredentials = true;
-
-                    // チャンクごとの進捗はここでは特に表示せず、全体の進捗で賄う
-                    // 必要であれば、個々のチャンクのプログレスも実装可能
                     await new Promise((resolve, reject) => {
                         xhr.onload = () => {
                             if (xhr.status === 200) {
@@ -802,30 +687,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         xhr.onerror = () => reject(new Error(`チャンク ${currentChunkIndex} のネットワークエラー`));
                         xhr.send(formData);
                     });
-
                     currentChunkIndex++;
                 }
-
-                // すべてのチャンクがアップロードされたら結合リクエストを送信
                 const mergeResponse = await fetch(`${baseURL}/api/merge-chunks`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fileId, fileName: file.name, totalChunks, currentFolder: currentFolder }),
                     credentials: 'include'
                 });
-
-                const mergeData = await handleResponse(mergeResponse); // handleResponse を再利用
+                const mergeData = await handleResponse(mergeResponse);
                 onCompleteCallback(file.name, true, mergeData.message || 'ファイルが正常にアップロードされました。');
-
             } catch (error) {
                 onCompleteCallback(file.name, false, `チャンクアップロード中にエラーが発生しました: ${error.message}`);
             }
         },
-
         uploadFiles: async (files) => {
             if (isRenamingInProgress() || !files || files.length === 0) return;
-
-            // UI要素の取得
             const uploadButton = document.getElementById('upload-button');
             const clearFileButton = document.getElementById('clear-file-button');
             const fileInput = document.getElementById('file-upload');
@@ -833,83 +710,67 @@ document.addEventListener('DOMContentLoaded', function() {
             const globalProgressContainer = document.getElementById('global-upload-progress-container');
             const globalProgressBar = document.getElementById('global-upload-progress-bar');
             const globalProgressText = document.getElementById('global-upload-progress-text');
-
-            // UIを無効化
             uploadButton.disabled = true;
             clearFileButton.disabled = true;
             fileInput.disabled = true;
             dropArea.style.pointerEvents = 'none';
             updateUI.message('アップロードを開始します...', false);
-            globalProgressContainer.style.display = 'flex'; // プログレスバーコンテナを表示
-
+            globalProgressContainer.style.display = 'flex';
             try {
                 await storageOperations.checkStorageBeforeUpload(files);
-
                 let completedFiles = 0;
-                
-                // 各ファイルの進捗を { uploaded: number, total: number } で管理するためのマップ
                 const fileProgress = new Map();
                 Array.from(files).forEach(file => fileProgress.set(file.name, { uploaded: 0, total: file.size }));
-
                 const totalBytesToUpload = Array.from(files).reduce((sum, file) => sum + file.size, 0);
-
                 const updateGlobalProgress = () => {
                     let currentTotalUploadedBytes = 0;
                     fileProgress.forEach(progress => currentTotalUploadedBytes += progress.uploaded);
-                    
                     const globalPercent = totalBytesToUpload > 0 ? (currentTotalUploadedBytes / totalBytesToUpload) * 100 : 0;
-                    
-                    // バーの幅とテキストを更新
                     globalProgressBar.style.width = `${globalPercent}%`;
                     globalProgressText.textContent = `${Math.round(globalPercent)}%`;
-
-                    // テキストの位置を動的に調整
                     const textWidth = globalProgressText.offsetWidth;
                     if (globalProgressBar.offsetWidth < textWidth + 15) {
-                        // テキストをバーの右端の外側に配置
                         globalProgressText.style.left = `calc(100% + 5px)`;
                         globalProgressText.style.transform = 'translateY(-50%)';
                         globalProgressText.style.color = 'var(--text-color-primary)';
                         globalProgressText.style.textShadow = 'none';
-
                     } else {
-                        // テキストをバーの内側中央に配置
                         globalProgressText.style.left = '50%';
                         globalProgressText.style.transform = 'translate(-50%, -50%)';
                         globalProgressText.style.color = 'white';
                         globalProgressText.style.textShadow = '0 0 2px rgba(0,0,0,0.7)';
                     }
                 };
-
                 const fileProgressCallback = (fileName, percent) => {
                     const fileInfo = fileProgress.get(fileName);
                     if (fileInfo) {
                         fileInfo.uploaded = fileInfo.total * (percent / 100);
-                        fileProgress.set(fileName, fileInfo); // 更新されたオブジェクトをマップに設定し直す
+                        fileProgress.set(fileName, fileInfo);
                     }
                     updateGlobalProgress();
+                    if (window.Android && typeof window.Android.uploadProgress === 'function') {
+                        window.Android.uploadProgress(fileName, Math.round(percent));
+                    }
                 };
-
                 const fileOnCompleteCallback = (fileName, success, message) => {
                     completedFiles++;
                     if (!success) {
                         handleError(new Error(message), `ファイルのアップロードに失敗しました: ${fileName}`);
                     } else {
                         updateUI.message(`${fileName}: ${message}`, false);
-                        // ファイルが完了したら、そのファイルのuploadedバイト数をtotalバイト数に設定
                         const fileInfo = fileProgress.get(fileName);
                         if (fileInfo) {
                             fileInfo.uploaded = fileInfo.total;
                             fileProgress.set(fileName, fileInfo);
                         }
                     }
-                    updateGlobalProgress(); // 完了時もプログレスを更新
-
+                    updateGlobalProgress();
+                    if (window.Android && typeof window.Android.uploadComplete === 'function') {
+                        window.Android.uploadComplete(fileName, success, message);
+                    }
                     if (completedFiles === files.length) {
                         updateUI.message('すべてのファイルのアップロードが完了しました。', false);
-                        globalProgressContainer.style.display = 'none'; // プログレスバーを非表示
-
-                        // UIを有効化
+                        globalProgressContainer.style.display = 'none';
                         uploadButton.disabled = false;
                         clearFileButton.disabled = false;
                         fileInput.disabled = false;
@@ -918,8 +779,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         fileOperations.loadFiles(currentFolder);
                     }
                 };
-
-                // 各ファイルを処理
                 const uploadPromises = Array.from(files).map(async (file) => {
                     if (file.size > storageOperations.CHUNK_UPLOAD_THRESHOLD) {
                         await storageOperations._uploadFileInChunks(file, fileProgressCallback, fileOnCompleteCallback);
@@ -927,18 +786,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         await new Promise(resolve => {
                             storageOperations._uploadSingleFile(file, fileProgressCallback, (fileName, success, message) => {
                                 fileOnCompleteCallback(fileName, success, message);
-                                resolve(); // Promiseを解決して次のファイルへ
+                                resolve();
                             });
                         });
                     }
                 });
-
-                await Promise.all(uploadPromises); // 全てのアップロードが完了するのを待つ
-                
+                await Promise.all(uploadPromises);
             } catch (err) {
                 handleError(err, 'アップロード処理全体の失敗');
-                globalProgressContainer.style.display = 'none'; // エラー時はプログレスバーを非表示
-                // UIを有効化 (エラー時も)
+                globalProgressContainer.style.display = 'none';
                 uploadButton.disabled = false;
                 clearFileButton.disabled = false;
                 fileInput.disabled = false;
@@ -947,8 +803,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     };
-    
-    // イベントリスナー設定
     backButton.addEventListener('click', () => {
         if (isRenamingInProgress()) return;
         if (currentFolder === '' || currentFolder.lastIndexOf('/') < 0) currentFolder = '';
@@ -964,7 +818,6 @@ document.addEventListener('DOMContentLoaded', function() {
         previewData.innerHTML = "";
         updateUI.setPreviewOpen(false);
     });
-    
     closeShareModalButton.addEventListener('click', () => { shareModal.style.display = 'none'; document.body.classList.remove('modal-open'); });
     copyShareLinkButton.addEventListener('click', () => {
         shareLinkInput.select();
@@ -974,15 +827,12 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => { copyShareLinkButton.textContent = 'コピー'; }, 1500);
         } catch (err) { alert("クリップボードへのコピーに失敗しました。"); }
     });
-
     dropArea.addEventListener('dragover', (e) => { e.preventDefault(); if(!isRenamingInProgress()) dropArea.classList.add('drag-over'); });
     dropArea.addEventListener('dragleave', () => dropArea.classList.remove('drag-over'));
     dropArea.addEventListener('drop', (e) => { e.preventDefault(); dropArea.classList.remove('drag-over'); if(!isRenamingInProgress()) storageOperations.uploadFiles(e.dataTransfer.files); });
-    
     resizer.addEventListener('mousedown', (e) => { if (window.matchMedia('(max-width: 768px)').matches) return; isResizing = true; startX = e.clientX; startWidth = sidebar.offsetWidth; document.body.style.cursor = 'ew-resize'; });
     document.addEventListener('mousemove', (e) => { if (!isResizing) return; const newWidth = startWidth + (e.clientX - startX); if (newWidth > 150 && newWidth < window.innerWidth * 0.5) sidebar.style.flexBasis = `${newWidth}px`; });
     document.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = 'default'; });
-
     if (darkModeToggle) {
         darkModeToggle.addEventListener('click', () => { 
             document.body.classList.toggle('dark-mode'); 
@@ -990,14 +840,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     if (localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-mode'); }
-
     sidebarToggle.addEventListener('click', (e) => { e.stopPropagation(); updateUI.toggleSidebar(); });
     if (mobileMenuToggle) {
         mobileMenuToggle.addEventListener('click', (e) => { e.stopPropagation(); updateUI.toggleSidebar(); });
     }
     if (mobileFab) {
         mobileFab.addEventListener('click', () => {
-            fileInput.click(); // Trigger file selection
+            fileInput.click();
         });
     }
     mobileNavItems.forEach(item => {
@@ -1005,7 +854,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const target = item.dataset.target;
             mobileNavItems.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
-            
             if (target === 'upload-trigger') {
                 fileInput.click();
             } else if (target === 'settings') {
@@ -1018,7 +866,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    // モバイル戻るボタン
     if (mobileBackBtn) {
         mobileBackBtn.addEventListener('click', () => {
             currentFolder = currentFolder.includes('/')
@@ -1027,8 +874,6 @@ document.addEventListener('DOMContentLoaded', function() {
             fileOperations.loadFiles(currentFolder);
         });
     }
-
-    // モバイル新規フォルダボタン
     if (mobileNewFolderBtn) {
         mobileNewFolderBtn.addEventListener('click', () => {
             const name = prompt('新しいフォルダー名を入力:');
@@ -1038,9 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fileOperations.createFolder();
         });
     }
-
     document.body.addEventListener('click', (e) => { if (window.matchMedia('(max-width: 768px)').matches && sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== sidebarToggle) { updateUI.toggleSidebar(false); } });
-
     shareOptionsProtectionRadios.forEach(radio => {
         radio.addEventListener('change', () => {
             shareOptionsPinContainer.style.display = (radio.value === 'pin' && radio.checked) ? 'block' : 'none';
@@ -1049,45 +892,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     shareOptionsCloseButton.addEventListener('click', () => { shareOptionsModal.style.display = 'none'; document.body.classList.remove('modal-open'); });
     shareOptionsModal.addEventListener('click', (e) => { if (e.target === shareOptionsModal) { shareOptionsModal.style.display = 'none'; document.body.classList.remove('modal-open'); } });
-
     closeMessageModalButton.addEventListener('click', updateUI.hideModalMessage);
     messageModalOkButton.addEventListener('click', updateUI.hideModalMessage);
-    messageModal.addEventListener('click', (e) => { // Close when clicking outside modal content
-        if (e.target === messageModal) {
-            updateUI.hideModalMessage();
-        }
-    });
-
+    messageModal.addEventListener('click', (e) => { if (e.target === messageModal) { updateUI.hideModalMessage(); } });
     const initializePage = async () => {
         try {
             const data = await fetch(`${baseURL}/check-login-status`, { credentials: 'include' }).then(handleResponse);
-            
             if (!data.loggedIn || !data.user) {
                 throw new Error('未ログイン');
             }
-
             if (data.needsDiscordLink) {
                 window.location.href = `${baseURL}/link-discord.html`;
                 return;
             }
-            
-            // 取得したユーザーデータでプロフィールUIを更新
             updateUserProfileUI(data.user);
-            
             updateUI.message('ログイン成功。ファイル一覧を取得中...');
             await fileOperations.loadFiles('');
-
-
-
         } catch (error) {
-            // alert('ログインセッションが無効か、確認に失敗しました。ログインページに移動します。'); // Removed alert as per user request
             console.error('Login session invalid or check failed. Redirecting to login page:', error);
             window.location.href = `${baseURL}/login.html`;
         }
     };
     initializePage();
-
     const appTitle = document.querySelector('.sidebar h1');
     const hiddenOptionsModal = document.getElementById('hidden-options-modal');
-    // ... (隠しオプションのロジックは変更なし)
 });
