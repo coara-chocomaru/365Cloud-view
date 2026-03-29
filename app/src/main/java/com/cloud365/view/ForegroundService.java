@@ -22,6 +22,7 @@ public class ForegroundService extends Service {
     public static final String ACTION_STORAGE_UPDATE = "com.cloud365.view.action.STORAGE_UPDATE";
     public static final String ACTION_UPLOAD_PROGRESS = "com.cloud365.view.action.UPLOAD_PROGRESS";
     public static final String ACTION_UPLOAD_FINISHED = "com.cloud365.view.action.UPLOAD_FINISHED";
+    public static final String ACTION_DELETE_COMPLETED = "com.cloud365.view.action.DELETE_COMPLETED";
 
     private static final int NOTIFICATION_ID = 4201;
     private static final int UPLOAD_NOTIFICATION_ID = 4202;
@@ -56,6 +57,8 @@ public class ForegroundService extends Service {
                 }
                 currentUploadFileName = "";
                 updateForegroundNotification();
+            } else if (ACTION_DELETE_COMPLETED.equals(action)) {
+                updateForegroundNotification();
             } else if (ACTION_STOP_FOREGROUND.equals(action)) {
                 stopForegroundService();
             }
@@ -71,6 +74,7 @@ public class ForegroundService extends Service {
         filter.addAction(ACTION_STORAGE_UPDATE);
         filter.addAction(ACTION_UPLOAD_PROGRESS);
         filter.addAction(ACTION_UPLOAD_FINISHED);
+        filter.addAction(ACTION_DELETE_COMPLETED);
         filter.addAction(ACTION_STOP_FOREGROUND);
 
         registerReceiver(receiver, filter);
