@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         setupWebView();
         loadMainPage();
+        broadcastStorageUpdate(storage);
     }
 
     private void setupWebView() {
