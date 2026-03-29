@@ -734,5 +734,22 @@ public class MainActivity extends AppCompatActivity {
             Intent i = new Intent(ForegroundService.ACTION_DELETE_COMPLETED);
             sendBroadcastToService(i);
         }
+
+        @JavascriptInterface
+        public void onStorageUsageUpdated(String used, String quota, String usedBytes, String quotaBytes) {
+            if (isFinishing()) return;
+            broadcastStorageUpdate("使用容量: " + used + " / " + quota);
+        }
+
+        @JavascriptInterface
+        public void setStorageUsage(String used, String quota, String usedBytes, String quotaBytes) {
+            if (isFinishing()) return;
+            broadcastStorageUpdate("使用容量: " + used + " / " + quota);
+        }
+
+        @JavascriptInterface
+        public void requestStorageSync() {
+            if (isFinishing()) return;
+        }
     }
 }
